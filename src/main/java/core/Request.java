@@ -1,3 +1,5 @@
+package core;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -57,7 +59,7 @@ public class Request implements Runnable{
         }
 
         switch (method_line[0]) {
-            case "GET": // generate new GETRequest
+            case "GET": // generate new core.GETRequest
                 GETRequest get = new GETRequest(outStream, method_line[1]);
                 get.sendResponse();
                 break;

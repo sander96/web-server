@@ -24,7 +24,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>Server</mainClass>
+                            <mainClass>core.Server</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

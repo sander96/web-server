@@ -1,12 +1,14 @@
+package core;
+
 import java.io.*;
 
 public class GETRequest {
 
-    private OutputStream out;
+    private OutputStream outStream;
     private String filePath;
 
     public GETRequest(OutputStream outStream, String path){
-        this.out = outStream;
+        this.outStream = outStream;
         filePath = path;
     }
 
@@ -20,18 +22,18 @@ public class GETRequest {
                 String responseHead = "HTTP/1.1 200 OK\n" +
                         "Content-Length: " + doc.length() + "\n" +
                         "Content-Type: text/html\n\r\n";
-                out.write(responseHead.getBytes());
+                outStream.write(responseHead.getBytes("UTF-8"));
 
                 while(true){
                     num = inputStream.read(fileBuf);
                     if(num < 0){
                         break;
                     }
-                    out.write(fileBuf);
+                    outStream.write(fileBuf);
                 }
             }
         }else{
-            out.write("HTTP/1.1 404 Not Found\r\n".getBytes());
+            outStream.write("HTTP/1.1 404 Not Found\r\n".getBytes());
         }
     }
 }
