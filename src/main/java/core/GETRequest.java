@@ -37,19 +37,22 @@ public class GETRequest {
             try {
                 //FileHandler.deleteFile("\\Files\\Folder\\delete.txt");
 
-                List<String> files = new ArrayList<>(FileHandler.getDirectory(filePath));     // may throw an exception; where should it be handled?
-                StringBuilder response = new StringBuilder();
+//                List<String> files = new ArrayList<>(FileHandler.getDirectory(filePath));     // may throw an exception; where should it be handled?
+//                StringBuilder response = new StringBuilder();
+//
+//                for(String fileName : files){
+//                    response.append(fileName + "\n");
+//                }
 
-                for(String fileName : files){
-                    response.append(fileName + "\n");
-                }
+                System.out.println("TERE");
 
-                String responseHead = "HTTP/1.1 200 OK\n" +
-                        "Content-Length: " + response.length() + "\n" +
-                        "Content-Type: text/html\n\r\n";
-
-                outStream.write(responseHead.getBytes("UTF-8"));
-                outStream.write(response.toString().getBytes("UTF-8"));     // just an example...
+                FileHandler.sendFile("\\Files\\sloth.jpg", outStream);
+//                String responseHead = "HTTP/1.1 200 OK\n" +
+//                        "Content-Length: " + response.length() + "\n" +
+//                        "Content-Type: text/html\n\r\n";
+//
+//                outStream.write(responseHead.getBytes("UTF-8"));
+//                outStream.write(response.toString().getBytes("UTF-8"));     // just an example...
             } catch (Exception e) {
                 outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
             }
