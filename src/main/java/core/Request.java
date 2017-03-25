@@ -55,8 +55,7 @@ public class Request implements Runnable{
 
                     oneRequestLine += (char)nextByte;
                     if (nextByte == '\n'){
-                        byte[] tmpBuf = oneRequestLine.getBytes();
-                        request += new String(tmpBuf, 0, tmpBuf.length, "UTF-8");
+                        request += oneRequestLine;
                         System.out.print(oneRequestLine);
                         if (oneRequestLine.equals("\r\n")){
                             analyze(inStream, outStream);
