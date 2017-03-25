@@ -14,26 +14,55 @@ public class Request implements Runnable{
 
     @Override
     public void run() {
+        String oneRequestLine = "";
+
         try{
             try(InputStream inStream = socket.getInputStream();
                 OutputStream outStream = socket.getOutputStream()){
                 while(true) {
-                    byte[] buffer = new byte[1024];
-                    int size = inStream.read(buffer);
+//                    byte[] buffer = new byte[1024];
+//                    int size = inStream.read(buffer);
+//
+//                    if (size < 0){
+//                        // send bad request error? (or not)
+//                        break;
+//                    }
+//
+//                    String tmp = new String(buffer, 0, size, "UTF-8");
+//                    request += tmp;
+//                    System.out.println(tmp);
+//
+//                    if (size > 3 && new String(buffer, size-3, 3, "UTF-8").equals("\n\r\n")){
+//                        // must ascertain whether request has a body (meaning (for now) if POST or GET)
+//                        analyze(inStream, outStream);
+//                        break;
+//                    }
 
-                    if (size < 0){
+                    // NB! Ma pidin selle rampe ümber ehitama, sest post requesti
+                    // korral eelnev kood ei funktsioneerinud võid ise proovida
+                    // ma sellepärast ei kustutanud vana asja veel ära aga kui
+                    // sa järgi checkid siis võid sellest vabaneda
+
+                    // muidugi uus kood loeb request headi sisse ühe baidi kaupa
+                    // aga kuna see (request head) on nii lühike siis vahet üldiselt pole
+                    int nextByte = inStream.read();
+                    if (nextByte < 0){
                         // send bad request error? (or not)
+                        // because inStream should never reach end of client input stream
+                        // maybe new IOException or something similar
                         break;
                     }
 
-                    String tmp = new String(buffer, 0, size, "UTF-8");
-                    request += tmp;
-                    System.out.println(tmp);
-
-                    if (size > 3 && new String(buffer, size-3, 3, "UTF-8").equals("\n\r\n")){
-                        // must ascertain whether request has a body (meaning (for now) if POST or GET)
-                        analyze(inStream, outStream);
-                        break;
+                    oneRequestLine += (char)nextByte;
+                    if (nextByte == '\n'){
+                        byte[] tmpBuf = oneRequestLine.getBytes();
+                        request += new String(tmpBuf, 0, tmpBuf.length, "UTF-8");
+                        System.out.print(oneRequestLine);
+                        if (oneRequestLine.equals("\r\n")){
+                            analyze(inStream, outStream);
+                            break;
+                        }
+                        oneRequestLine = "";
                     }
                 }
             }finally {
@@ -56,7 +85,8 @@ public class Request implements Runnable{
                 continue;
             }
 
-            headers.put(headerData[0], headerData[1]);
+            headers.put(headerData[0], headerData[1].substring(0,
+                    headerData[1].length()-1));
         }
 
         switch (methodLine[0]) {
@@ -64,7 +94,12 @@ public class Request implements Runnable{
                 GETRequest get = new GETRequest(outStream, methodLine[1]);
                 get.sendResponse();
                 break;
-            case "POST": // (read request body) xor (send InStream to constructor) and generate new POSTRequest
+            case "POST": // generate new core.POSTRequest
+                POSTRequest post = new POSTRequest(inStream, outStream, headers, methodLine[1]);
+                post.readFile();
+                post.sendResponse();
+                break;
+            case "PUT": // same as POST but different but still same
                 break;
             default: // generate new errorPage (we have no full support)
         }
