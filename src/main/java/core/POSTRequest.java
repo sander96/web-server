@@ -43,7 +43,7 @@ public class POSTRequest {
         // basically should get away by generating new core.GETRequest here
         // because browser needs some kind of response
 
-        GETRequest postResponse = new GETRequest(outStream, filePath);
+        GETRequest postResponse = new GETRequest(outStream, filePath, headers);
         postResponse.sendResponse();
     }
 

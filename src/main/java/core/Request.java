@@ -66,7 +66,7 @@ public class Request implements Runnable{
 
         switch (methodLine[0]) {
             case "GET": // generate new core.GETRequest
-                GETRequest get = new GETRequest(outStream, methodLine[1]);
+                GETRequest get = new GETRequest(outStream, methodLine[1], headers);
                 get.sendResponse();
                 break;
             case "POST": // generate new core.POSTRequest

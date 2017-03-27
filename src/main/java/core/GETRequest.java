@@ -1,16 +1,17 @@
 package core;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class GETRequest {
     private OutputStream outStream;
     private String filePath;
+    private Map<String, String> headers;
 
-    public GETRequest(OutputStream outStream, String path){
+    public GETRequest(OutputStream outStream, String path, Map<String, String> headers){
         this.outStream = outStream;
         this.filePath = path;
+        this.headers = headers;
     }
 
     public void sendResponse() throws IOException{
