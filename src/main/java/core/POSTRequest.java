@@ -5,12 +5,12 @@ import java.io.*;
 import java.util.Map;
 
 public class POSTRequest {
-    private InputStream inStream;
+    private InputStreamReader inStream;
     private OutputStream outStream;
     private Map<String, String> headers;
     private String filePath;
 
-    public POSTRequest(InputStream inStream, OutputStream outStream, Map<String,
+    public POSTRequest(InputStreamReader inStream, OutputStream outStream, Map<String,
             String> headers, String filePath) {
         this.inStream = inStream;
         this.outStream = outStream;
@@ -20,7 +20,7 @@ public class POSTRequest {
 
     public void readFile() throws IOException{
         long contentLength = getContentLength();
-        byte[] buffer = new byte[1024];
+        char[] buffer = new char[1024];
 
         while(contentLength > 0){
             int bytesRead = inStream.read(buffer);
@@ -33,7 +33,7 @@ public class POSTRequest {
 
             // ma arvan, et siin peaks kasutama core.FileHandler'it aga pole kindel kuidas
             // hetkel lihtsalt tetimiseks see sout
-            System.out.println(new String(buffer, 0, bytesRead, "UTF-8"));
+            System.out.println(new String(buffer));
 
             contentLength -= bytesRead;
         }

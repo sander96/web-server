@@ -14,55 +14,31 @@ public class Request implements Runnable{
 
     @Override
     public void run() {
-        String oneRequestLine = "";
+        StringBuilder oneRequestLine = new StringBuilder();
 
         try{
-            try(InputStream inStream = socket.getInputStream();
+            try(InputStream inputStream = socket.getInputStream();
+                InputStreamReader inStream = new InputStreamReader(inputStream);
                 OutputStream outStream = socket.getOutputStream()){
                 while(true) {
-//                    byte[] buffer = new byte[1024];
-//                    int size = inStream.read(buffer);
-//
-//                    if (size < 0){
-//                        // send bad request error? (or not)
-//                        break;
-//                    }
-//
-//                    String tmp = new String(buffer, 0, size, "UTF-8");
-//                    request += tmp;
-//                    System.out.println(tmp);
-//
-//                    if (size > 3 && new String(buffer, size-3, 3, "UTF-8").equals("\n\r\n")){
-//                        // must ascertain whether request has a body (meaning (for now) if POST or GET)
-//                        analyze(inStream, outStream);
-//                        break;
-//                    }
 
-                    // NB! Ma pidin selle rampe ümber ehitama, sest post requesti
-                    // korral eelnev kood ei funktsioneerinud võid ise proovida
-                    // ma sellepärast ei kustutanud vana asja veel ära aga kui
-                    // sa järgi checkid siis võid sellest vabaneda
-
-                    // muidugi uus kood loeb request headi sisse ühe baidi kaupa
-                    // aga kuna see (request head) on nii lühike siis vahet üldiselt pole
-                    int nextByte = inStream.read();
-                    if (nextByte < 0){
-                        // send bad request error? (or not)
-                        // because inStream should never reach end of client input stream
-                        // maybe new IOException or something similar
+                    int currentChar = inStream.read();
+                    if (currentChar < 0){
                         break;
                     }
 
-                    oneRequestLine += (char)nextByte;
-                    if (nextByte == '\n'){
-                        request += oneRequestLine;
-                        System.out.print(oneRequestLine);
-                        if (oneRequestLine.equals("\r\n")){
+                    if (currentChar == '\n') {
+                        System.out.println(oneRequestLine.toString());
+                        if (oneRequestLine.toString().equals("\r")){
                             analyze(inStream, outStream);
                             break;
                         }
-                        oneRequestLine = "";
+                        oneRequestLine.append('\n');
+                        request += oneRequestLine.toString();
+                        oneRequestLine = new StringBuilder();
+                        continue;
                     }
+                    oneRequestLine.append((char)currentChar);
                 }
             }finally {
                 socket.close();
@@ -72,12 +48,12 @@ public class Request implements Runnable{
         }
     }
 
-    private void analyze(InputStream inStream, OutputStream outStream) throws IOException{
+    private void analyze(InputStreamReader inStream, OutputStream outStream) throws IOException{
         String[] requestLines = request.split("\n");
         String[] methodLine = requestLines[0].split(" ");
         Map<String, String> headers = new HashMap<>();
 
-        for(int i = 1; i < requestLines.length - 1; ++i){
+        for(int i = 1; i < requestLines.length; ++i){
             String[] headerData = requestLines[i].split(": ");
 
             if (headerData.length != 2){
