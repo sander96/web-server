@@ -12,7 +12,6 @@ public class FileHandler {
             throws IOException{ //TODO panna siia mingi normaalne exception ka veel
         File file = new File(path);
         String name = file.getName();
-        System.out.println("NAMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE " + name);
         String[] nameParams = name.split("\\p{Punct}");
         String fileType = nameParams[1];
 
