@@ -21,7 +21,7 @@ public class POSTRequest {
     public void readFile() throws IOException{
         // TODO write to disk test
         long contentLength = getContentLength();
-        //FileHandler.writeToDisk("FileServer\\staticPath.jpg", inStream, contentLength);
+        FileHandler.writeToDisk("Server\\FileServer\\staticPath.jpg", inStream, contentLength);
     }
 
     public void sendResponse() throws IOException{

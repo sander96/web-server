@@ -1,0 +1,19 @@
+------WebKitFormBoundaryEav8fXmRxfJnwAX2
+Content-Disposition: form-data; name="fileName"; filename="Test.java"
+Content-Type: application/octet-stream
+
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+
+public class Test {
+    public static void main(String[] args) throws IOException{
+        try(DataInputStream inputStream = new DataInputStream(new FileInputStream("test.txt"))){
+            String input = inputStream.readUTF();
+            System.out.println(input);
+        }
+    }
+}
+
+------WebKitFormBoundaryEav8fXmRxfJnwAX2--

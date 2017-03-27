@@ -31,24 +31,24 @@ public class FileHandler {
         }
     }
 
-    public static synchronized void writeToDisk(String path, DataInputStream inputStream, long contentLength) throws IOException {
+    public static synchronized void writeToDisk(String path, InputStreamReader inputStream,
+                                                long contentLength) throws IOException {
         // TODO check if the file gets overwritten
 
-        FileOutputStream fileOutputStream = new FileOutputStream(path);
-        byte[] buffer = new byte[1024];
+        try(PrintWriter fileWriter = new PrintWriter(new File(path))){
+            char[] buffer = new char[1024];
+            long fileLength = contentLength;
 
-        while(true){
-            int bytesRead = inputStream.read(buffer);
+            while(fileLength > 0){
+                int bytesRead = inputStream.read(buffer);
 
-            if (bytesRead == -1){
-                // must throw some kind of exception ???
-                break;
+                if (bytesRead == -1){
+                    throw new RuntimeException("Client closed connection unexpectedly.");
+                }
+                fileWriter.write(buffer, 0, bytesRead);
+
+                fileLength -= bytesRead;
             }
-
-            fileOutputStream.write(buffer);
-
-
-            contentLength -= bytesRead;
         }
     }
 
