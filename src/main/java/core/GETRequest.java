@@ -15,7 +15,7 @@ public class GETRequest {
 
     public void sendResponse() throws IOException{
         if (filePath.equals("/")){
-            File doc = new File("index.html");
+            File doc = new File("Server\\index.html");
             byte[] fileBuffer = new byte[2048];
 
             try(InputStream inputStream = new FileInputStream(doc)){
