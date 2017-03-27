@@ -33,26 +33,21 @@ public class GETRequest {
                     outStream.write(fileBuffer);
                 }
             }
+        }else if(filePath.equals("/favicon.ico")){
+            try {
+                FileHandler.sendFile("\\Server\\favicon.ico", outStream);
+            } catch (Exception e) {
+                outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
+            }
+        }else if(filePath.equals("/default.css")){
+            try {
+                FileHandler.sendFile("\\Server\\default.css", outStream);
+            } catch (Exception e) {
+                outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
+            }
         }else{
             try {
-                //FileHandler.deleteFile("\\Files\\Folder\\delete.txt");
-
-//                List<String> files = new ArrayList<>(FileHandler.getDirectory(filePath));     // may throw an exception; where should it be handled?
-//                StringBuilder response = new StringBuilder();
-//
-//                for(String fileName : files){
-//                    response.append(fileName + "\n");
-//                }
-
-                System.out.println("TERE");
-
-                FileHandler.sendFile("\\Files\\sloth.jpg", outStream);
-//                String responseHead = "HTTP/1.1 200 OK\n" +
-//                        "Content-Length: " + response.length() + "\n" +
-//                        "Content-Type: text/html\n\r\n";
-//
-//                outStream.write(responseHead.getBytes("UTF-8"));
-//                outStream.write(response.toString().getBytes("UTF-8"));     // just an example...
+                FileHandler.sendFile("\\Server\\FileServer\\sloth.jpg", outStream);
             } catch (Exception e) {
                 outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
             }

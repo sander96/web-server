@@ -1,9 +1,6 @@
 package core;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,8 +15,8 @@ public class FileHandler {
 
         String responseHeader = "HTTP/1.1 200 OK\n" +
                 "Content-Length: " + file.length() + "\n" +
-                "Content-Type: multipart/form-data\n" +
-                "Content-Disposition: attachment; filename=\"picture.jpg\"\n\r\n";
+                "Content-Type: text/css\n" +
+                "Content-Disposition: attachment; filename=\"default.css\"\n\r\n";
 
         outputStream.write(responseHeader.getBytes("UTF-8"));
 
@@ -34,8 +31,25 @@ public class FileHandler {
         }
     }
 
-    public static synchronized void downloadFile(){
+    public static synchronized void writeToDisk(String path, DataInputStream inputStream, long contentLength) throws IOException {
+        // TODO check if the file gets overwritten
 
+        FileOutputStream fileOutputStream = new FileOutputStream(path);
+        byte[] buffer = new byte[1024];
+
+        while(true){
+            int bytesRead = inputStream.read(buffer);
+
+            if (bytesRead == -1){
+                // must throw some kind of exception ???
+                break;
+            }
+
+            fileOutputStream.write(buffer);
+
+
+            contentLength -= bytesRead;
+        }
     }
 
     public static synchronized List<String> getDirectory(String path) throws Exception {

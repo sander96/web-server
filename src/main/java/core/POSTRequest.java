@@ -19,24 +19,9 @@ public class POSTRequest {
     }
 
     public void readFile() throws IOException{
+        // TODO write to disk test
         long contentLength = getContentLength();
-        char[] buffer = new char[1024];
-
-        while(contentLength > 0){
-            int bytesRead = inStream.read(buffer);
-            if (bytesRead < 0){
-                // must throw some kind of exception
-                break;
-            }
-            // method body comes here because something must happen to
-            // the file sent by client
-
-            // ma arvan, et siin peaks kasutama core.FileHandler'it aga pole kindel kuidas
-            // hetkel lihtsalt tetimiseks see sout
-            System.out.println(new String(buffer));
-
-            contentLength -= bytesRead;
-        }
+        //FileHandler.writeToDisk("FileServer\\staticPath.jpg", inStream, contentLength);
     }
 
     public void sendResponse() throws IOException{
