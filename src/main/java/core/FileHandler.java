@@ -42,12 +42,12 @@ public class FileHandler {
         }
     }
 
-    public static synchronized void writeToDisk(String path, InputStreamReader inputStream,
+    public static synchronized void writeToDisk(String path, InputStream inputStream,
                                                 long contentLength) throws IOException {
         // TODO check if the file gets overwritten
 
-        try(PrintWriter fileWriter = new PrintWriter(new File(path))){
-            char[] buffer = new char[1024];
+        try(FileOutputStream fileWriter = new FileOutputStream(new File(path))){
+            byte[] buffer = new byte[1024];
             long fileLength = contentLength;
 
             while(fileLength > 0){

@@ -5,12 +5,12 @@ import java.io.*;
 import java.util.Map;
 
 public class POSTRequest {
-    private InputStreamReader inStream;
+    private InputStream inStream;
     private OutputStream outStream;
     private Map<String, String> headers;
     private String filePath;
 
-    public POSTRequest(InputStreamReader inStream, OutputStream outStream, Map<String,
+    public POSTRequest(InputStream inStream, OutputStream outStream, Map<String,
             String> headers, String filePath) {
         this.inStream = inStream;
         this.outStream = outStream;

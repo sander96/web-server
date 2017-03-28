@@ -15,30 +15,37 @@ public class Request implements Runnable{
     @Override
     public void run() {
         StringBuilder oneRequestLine = new StringBuilder();
+        int headLen = 0;
+        byte[] requestIn = new byte[8192];
+        byte[] delimiterSequence = new byte[3];
 
         try{
             try(InputStream inputStream = socket.getInputStream();
-                InputStreamReader inStream = new InputStreamReader(inputStream);
                 OutputStream outStream = socket.getOutputStream()){
                 while(true) {
-
-                    int currentChar = inStream.read();
-                    if (currentChar < 0){
-                        break;
+                    byte currentByte = (byte) inputStream.read();
+                    if (currentByte < 0){
+                        System.out.println(request);
+                        throw new RuntimeException("Client closed connection unexpectedly.");
                     }
 
-                    if (currentChar == '\n') {
-                        System.out.println(oneRequestLine.toString());
-                        if (oneRequestLine.toString().equals("\r")){
-                            analyze(inStream, outStream);
+                    if (headLen < 2){
+                        delimiterSequence[headLen] = currentByte;
+                    } else {
+                        delimiterSequence[0] = delimiterSequence[1];
+                        delimiterSequence[1] = delimiterSequence[2];
+                        delimiterSequence[2] = currentByte;
+
+                        if (delimiterSequence[0] == '\n' && delimiterSequence[1] == '\r' && delimiterSequence[2] == '\n'){
+                            //end of request head
+                            request = URLDecoder.decode(new String(requestIn, 0, headLen), "UTF-8");
+                            System.out.println(request);
+                            analyze(inputStream, outStream);
                             break;
                         }
-                        oneRequestLine.append('\n');
-                        request += oneRequestLine.toString();
-                        oneRequestLine = new StringBuilder();
-                        continue;
                     }
-                    oneRequestLine.append((char)currentChar);
+                    requestIn[headLen] = currentByte;
+                    headLen++;
                 }
             }finally {
                 socket.close();
@@ -48,7 +55,7 @@ public class Request implements Runnable{
         }
     }
 
-    private void analyze(InputStreamReader inStream, OutputStream outStream) throws IOException{
+    private void analyze(InputStream inStream, OutputStream outStream) throws IOException{
         String[] requestLines = request.split("\n");
         String[] methodLine = requestLines[0].split(" ");
         Map<String, String> headers = new HashMap<>();
