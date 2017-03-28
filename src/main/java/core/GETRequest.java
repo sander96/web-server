@@ -17,16 +17,17 @@ public class GETRequest {
     public void sendResponse() throws IOException{
         if (filePath.equals("/")){
             try{
-                FileHandler.sendFile("Server\\index.html", outStream);
+                FileHandler.sendFile("Server\\index.html", outStream, headers);
             }catch (IOException e){
                 // TODO elimineerida pornograafia
                 outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
             }
         }else{
             filePath = "Server\\" + filePath.substring(1);
+
             try{
-                FileHandler.sendFile(filePath, outStream);
-            } catch (IOException e){
+                FileHandler.sendFile(filePath, outStream, headers);
+            } catch (Exception e){
                 // TODO elimineerida pornograafia
                 outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
             }

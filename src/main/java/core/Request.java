@@ -64,7 +64,7 @@ public class Request implements Runnable{
 
             // TODO bad request error, 400
 
-            if (headerData.length != 2){        // TODO vaata hiljem yle
+            if (headerData.length != 2){        // TODO mis jama see on?
                 throw new RuntimeException("Bad request.");
             }
 
@@ -79,7 +79,7 @@ public class Request implements Runnable{
                 break;
             case "POST": // generate new core.POSTRequest
                 POSTRequest post = new POSTRequest(inStream, outStream, headers, methodLine[1]);
-                post.readFile();        // TODO todo
+                post.writeFile();        // TODO todo
                 post.sendResponse();
                 break;
             default: // generate new errorPage (we have no full support)

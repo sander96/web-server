@@ -6,14 +6,15 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class FileHandler {
-    public static synchronized void sendFile(String path, OutputStream outputStream)
-            throws IOException{ //TODO panna siia mingi normaalne exception ka veel
+    public static synchronized void sendFile(String path, OutputStream outputStream, Map<String, String> headers)
+            throws IOException, RuntimeException{ //TODO panna siia mingi normaalne exception ka veel
         File file = new File(path);
-        String name = file.getName();
-        String[] nameParams = name.split("\\p{Punct}");
-        String fileType = nameParams[1];
+
+        System.out.println(headers.get("Accept"));
+        String[] acceptable = headers.get("Accept").split(",");     // TODO vigane, kuid algsed asjad t88tavad
 
         try {
             checkServerDirectory(file);
@@ -27,7 +28,8 @@ public class FileHandler {
 
         String responseHeader = "HTTP/1.1 200 OK\n" +
                 "Content-Length: " + file.length() + "\n" +
-                "Content-Type: text/" +  fileType + "\n\r\n";
+                "Content-Type:" + acceptable[0] + "\n\r\n";
+                //"Content-Disposition: attachment; filename=" + path + "\r\n";
 
         outputStream.write(responseHeader.getBytes("UTF-8"));
 
@@ -44,7 +46,7 @@ public class FileHandler {
 
     public static synchronized void writeToDisk(String path, InputStream inputStream,
                                                 long contentLength) throws IOException {
-        // TODO check if the file gets overwritten, forbidden 403
+        // TODO check if the file gets overwritten, 403 forbidden
 
         try(FileOutputStream fileWriter = new FileOutputStream(new File(path))){
             byte[] buffer = new byte[1024];
@@ -76,13 +78,13 @@ public class FileHandler {
         file.delete();
     }
 
-    private static void checkServerDirectory(File file) throws FileNotFoundException,AccessRestrictedException {
+    private static void checkServerDirectory(File file) throws FileNotFoundException, AccessRestrictedException {
         if(!file.exists()){
             throw new FileNotFoundException("\"" + file.getPath() + "\" does not exist.");
         }
 
         if(file.isAbsolute()){
-            throw new AccessRestrictedException();
+            throw new AccessRestrictedException();  // TODO 400 Bad Request
         }
     }
 }
