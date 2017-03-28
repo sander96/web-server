@@ -44,7 +44,7 @@ public class FileHandler {
 
     public static synchronized void writeToDisk(String path, InputStream inputStream,
                                                 long contentLength) throws IOException {
-        // TODO check if the file gets overwritten
+        // TODO check if the file gets overwritten, forbidden 403
 
         try(FileOutputStream fileWriter = new FileOutputStream(new File(path))){
             byte[] buffer = new byte[1024];

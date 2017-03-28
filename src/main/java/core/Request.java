@@ -14,7 +14,6 @@ public class Request implements Runnable{
 
     @Override
     public void run() {
-        StringBuilder oneRequestLine = new StringBuilder();
         int headLen = 0;
         byte[] requestIn = new byte[8192];
         byte[] delimiterSequence = new byte[3];
@@ -45,7 +44,7 @@ public class Request implements Runnable{
                         }
                     }
                     requestIn[headLen] = currentByte;
-                    headLen++;
+                    ++headLen;
                 }
             }finally {
                 socket.close();
@@ -60,15 +59,17 @@ public class Request implements Runnable{
         String[] methodLine = requestLines[0].split(" ");
         Map<String, String> headers = new HashMap<>();
 
-        for(int i = 1; i < requestLines.length; ++i){
+        for(int i = 1; i < requestLines.length - 1; ++i){
             String[] headerData = requestLines[i].split(": ");
 
-            if (headerData.length != 2){
-                continue;
+            // TODO bad request error, 400
+
+            if (headerData.length != 2){        // TODO vaata hiljem yle
+                throw new RuntimeException("Bad request.");
             }
 
-            headers.put(headerData[0], headerData[1].substring(0,
-                    headerData[1].length()-1));
+            headers.put(headerData[0],
+                    headerData[1].substring(0, headerData[1].length()-1));
         }
 
         switch (methodLine[0]) {
@@ -78,12 +79,11 @@ public class Request implements Runnable{
                 break;
             case "POST": // generate new core.POSTRequest
                 POSTRequest post = new POSTRequest(inStream, outStream, headers, methodLine[1]);
-                post.readFile();
+                post.readFile();        // TODO todo
                 post.sendResponse();
                 break;
-            case "PUT": // same as POST but different but still same
-                break;
             default: // generate new errorPage (we have no full support)
+                throw new RuntimeException("This method request is not supported."); // TODO 500
         }
 
         // prolly not going to stay here of course (daaa!?)

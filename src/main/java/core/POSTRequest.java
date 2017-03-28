@@ -10,8 +10,8 @@ public class POSTRequest {
     private Map<String, String> headers;
     private String filePath;
 
-    public POSTRequest(InputStream inStream, OutputStream outStream, Map<String,
-            String> headers, String filePath) {
+    public POSTRequest(InputStream inStream, OutputStream outStream,
+                       Map<String, String> headers, String filePath) {
         this.inStream = inStream;
         this.outStream = outStream;
         this.headers = headers;
