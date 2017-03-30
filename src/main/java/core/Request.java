@@ -58,6 +58,13 @@ public class Request implements Runnable{
         String[] requestLines = request.split("\n");
         String[] methodLine = requestLines[0].split(" ");
         Map<String, String> headers = new HashMap<>();
+        String failPath = "";
+
+        for(int i = 1; i < methodLine.length-1; i++){
+            failPath += methodLine[i]+" ";
+        }
+        // et viimane tühik ära võetaks
+        failPath = failPath.substring(0, failPath.length()-1);
 
         for(int i = 1; i < requestLines.length - 1; ++i){
             String[] headerData = requestLines[i].split(": ");
@@ -74,11 +81,11 @@ public class Request implements Runnable{
 
         switch (methodLine[0]) {
             case "GET": // generate new core.GETRequest
-                GETRequest get = new GETRequest(outStream, methodLine[1], headers);
+                GETRequest get = new GETRequest(outStream, failPath, headers);
                 get.sendResponse();
                 break;
             case "POST": // generate new core.POSTRequest
-                POSTRequest post = new POSTRequest(inStream, outStream, headers, methodLine[1]);
+                POSTRequest post = new POSTRequest(inStream, outStream, headers, failPath);
                 post.writeFile();        // TODO todo
                 post.sendResponse();
                 break;
@@ -89,7 +96,7 @@ public class Request implements Runnable{
         // prolly not going to stay here of course (daaa!?)
         System.out.println("--- DATA OF QUERY ---\n");
         System.out.println("Method: " + methodLine[0]);
-        System.out.println("Path: " + methodLine[1]);
+        System.out.println("Path: " + failPath);
         System.out.println("Protocol and version: " + methodLine[2]);
         System.out.println("\n--- HEADER DATA ---\n");
 

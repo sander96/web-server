@@ -32,7 +32,7 @@ public class GETRequest {
                     String headers = "HTTP/1.1 200 OK\n" +
                             "Content-Type: text/html\n" +
                             "Content-Length: " + payloadLen + "\n\r\n";
-                    
+
                     outStream.write(headers.getBytes());
                     outStream.write(payload);
                 }else{
