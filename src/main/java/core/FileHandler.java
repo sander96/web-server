@@ -13,8 +13,8 @@ public class FileHandler {
             throws IOException, RuntimeException{ //TODO panna siia mingi normaalne exception ka veel
         File file = new File(path);
 
-        System.out.println(headers.get("Accept"));
-        String[] acceptable = headers.get("Accept").split(",");     // TODO vigane, kuid algsed asjad t88tavad
+        //System.out.println(headers.get("Accept"));
+        //String[] acceptable = headers.get("Accept").split(",");     // TODO vigane, kuid algsed asjad t88tavad
 
         try {
             checkServerDirectory(file);
@@ -28,8 +28,8 @@ public class FileHandler {
 
         String responseHeader = "HTTP/1.1 200 OK\n" +
                 "Content-Length: " + file.length() + "\n" +
-                "Content-Type:" + acceptable[0] + "\n\r\n";
-                //"Content-Disposition: attachment; filename=" + path + "\r\n";
+                "Content-Type: multipart/form-data\n" +
+                "Content-Disposition: attachment; filename=" + path + "\n\r\n";
 
         outputStream.write(responseHeader.getBytes("UTF-8"));
 
@@ -69,6 +69,9 @@ public class FileHandler {
         File file = new File(path.substring(1));
         checkServerDirectory(file);
 
+        List<String> fileNames = Arrays.asList(file.list());
+
+
         return new ArrayList<String>(Arrays.asList(file.list()));
     }
 
@@ -86,5 +89,12 @@ public class FileHandler {
         if(file.isAbsolute()){
             throw new AccessRestrictedException();  // TODO 400 Bad Request
         }
+    }
+
+    public static boolean isFolder(String path) throws FileNotFoundException, AccessRestrictedException {
+        File file = new File(path);
+        checkServerDirectory(file);
+
+        return !file.isFile();      // TODO vigane
     }
 }
