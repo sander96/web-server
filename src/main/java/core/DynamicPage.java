@@ -12,20 +12,30 @@ public class DynamicPage {
     public DynamicPage() {
     }
 
-    public String createPage(List<String> files, String path){
+    public String createPage(String folderPath){
+        if (!folderPath.endsWith("/")){
+            throw new RuntimeException("This was not folder");
+        }
+
+        String[] files = new File(folderPath).list();
+
         String test = "<!doctype html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "<meta charset=\"utf-8\">\n" +
                 "</head>\n<body>\n" +
-                "<h1>" + path + "</h1><hr>\n" +
+                "<h1>" + folderPath + "</h1><hr>\n" +
                 "<pre>\n";
 
         page.append(test);
         page.append("<a href=\"../\">../</a>\n");
 
-        for(int i = 0; i < files.size(); ++i){           // TODO kaldkriips folderi puhul, faili puhul mitte, bugine
-            String str = new String("<a href=" + "\"" + files.get(i) + "/" + "\"" + ">" + files.get(i) + "</a>\n");
+        for(int i = 0; i < files.length; ++i){ // TODO kaldkriips folderi puhul, faili puhul mitte, bugine
+            String slash = "";
+            if (new File(folderPath + files[i]).isDirectory()){
+                slash = "/";
+            }
+            String str = "<a href=" + "\"" + files[i] + slash + "\"" + ">" + files[i] + "</a>\n";
             page.append(str);
         }
 

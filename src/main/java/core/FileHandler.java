@@ -9,12 +9,20 @@ import java.util.List;
 import java.util.Map;
 
 public class FileHandler {
-    public static synchronized void sendFile(String path, OutputStream outputStream, Map<String, String> headers)
-            throws IOException, RuntimeException{ //TODO panna siia mingi normaalne exception ka veel
-        File file = new File(path);
+    public static synchronized void sendFile(String path, OutputStream outputStream,
+                    Map<String, String> headers) throws FileNotFoundException{
 
-        //System.out.println(headers.get("Accept"));
-        //String[] acceptable = headers.get("Accept").split(",");     // TODO vigane, kuid algsed asjad t88tavad
+        path = path.substring(1);
+        File file = new File(path);
+        String contentType;
+
+        if (file.getName().endsWith(".html")){
+            contentType = "text/html";
+        }else if (file.getName().endsWith(".css")) {
+            contentType = "text/css";
+        } else {
+            contentType = "multipart/form-data";
+        }
 
         try {
             checkServerDirectory(file);
@@ -23,24 +31,24 @@ public class FileHandler {
             throw new RuntimeException("Access restricted");
         }
 
-        byte[] buffer = new byte[4 * 1024];
+        byte[] buffer = new byte[1024];
         FileInputStream fileStream = new FileInputStream(file);
-
         String responseHeader = "HTTP/1.1 200 OK\n" +
-                "Content-Length: " + file.length() + "\n" +
-                "Content-Type: multipart/form-data\n" +
-                "Content-Disposition: attachment; filename=" + path + "\n\r\n";
+                "Content-Length:" + file.length() + "\n" +
+                "Content-Type: " + contentType + "; charset=utf-8\n\r\n";
 
-        outputStream.write(responseHeader.getBytes("UTF-8"));
+        try {
+            outputStream.write(responseHeader.getBytes("UTF-8"));
+            while (true) {
+                int size = fileStream.read(buffer);
 
-        while(true){
-            int size = fileStream.read(buffer);
-
-            if(size == -1){
-                break;
+                if (size == -1) {
+                    break;
+                }
+                outputStream.write(buffer, 0, size);
             }
-
-            outputStream.write(buffer, 0, size);
+        }catch (IOException ioEx){
+            throw new RuntimeException("Something went wrong with file sending process");
         }
     }
 
@@ -65,16 +73,6 @@ public class FileHandler {
         }
     }
 
-    public static synchronized List<String> getDirectory(String path) throws Exception {
-        File file = new File(path.substring(1));
-        checkServerDirectory(file);
-
-        List<String> fileNames = Arrays.asList(file.list());
-
-
-        return new ArrayList<String>(Arrays.asList(file.list()));
-    }
-
     public static synchronized void deleteFile(String path) throws Exception {
         File file = new File(path.substring(1));
         checkServerDirectory(file);
@@ -89,12 +87,5 @@ public class FileHandler {
         if(file.isAbsolute()){
             throw new AccessRestrictedException();  // TODO 400 Bad Request
         }
-    }
-
-    public static boolean isFolder(String path) throws FileNotFoundException, AccessRestrictedException {
-        File file = new File(path);
-        checkServerDirectory(file);
-
-        return !file.isFile();      // TODO vigane
     }
 }

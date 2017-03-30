@@ -19,37 +19,28 @@ public class GETRequest {
     public void sendResponse() throws IOException{
         if (filePath.equals("/")){
             try{
-                FileHandler.sendFile("index.html", outStream, headers);
-            }catch (IOException e){
+                FileHandler.sendFile("/index.html", outStream, headers);
+            }catch (FileNotFoundException fnfEx){
                 // TODO elimineerida pornograafia
                 outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
             }
         }else{
-            try{        // TODO tyhikud failinimes
-                System.out.println(filePath);
-                if(FileHandler.isFolder(filePath.substring(1))){
-                    DynamicPage page = new DynamicPage();
-
-                    String newPage = page.createPage(FileHandler.getDirectory(filePath), filePath);
-                    outStream.write(("HTTP/1.1 200 OK\n" +
-                            "Content-Length: " + newPage.getBytes().length + "\n" +
-                            "Content-Type:" + "text/html" + "\n\r\n").getBytes("UTF-8"));
-
-                    outStream.write(newPage.getBytes("UTF-8"));
+            try{
+                if (filePath.endsWith("/")){
+                    byte[] payload = new DynamicPage().createPage(filePath.substring(1)).getBytes();
+                    int payloadLen = payload.length;
+                    String headers = "HTTP/1.1 200 OK\n" +
+                            "Content-Type: text/html\n" +
+                            "Content-Length: " + payloadLen + "\n\r\n";
+                    
+                    outStream.write(headers.getBytes());
+                    outStream.write(payload);
                 }else{
-                    filePath = filePath.substring(1);
-                    System.out.println(filePath);
-
-                    try{
-                        FileHandler.sendFile(filePath, outStream, headers);
-                    } catch (Exception e){
-                        // TODO elimineerida pornograafia
-                        outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
-                    }
+                    FileHandler.sendFile(filePath, outStream, headers);
                 }
-            } catch (AccessRestrictedException e) {     // TODO fix exceptions
-
-            } catch (Exception e) {
+            }catch (FileNotFoundException fnfEx){
+                // TODO elimineerida pornograafia
+                outStream.write("HTTP/1.1 404 Not Found\n\r\n".getBytes());
             }
         }
     }
