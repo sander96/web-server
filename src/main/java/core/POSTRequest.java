@@ -1,6 +1,5 @@
 package core;
 
-
 import java.io.*;
 import java.util.Map;
 
@@ -18,23 +17,20 @@ public class POSTRequest {
         this.filePath = filePath;
     }
 
-    public void writeFile() throws IOException{
+    public void writeFile() throws IOException {
         // TODO write to disk test
         long contentLength = getContentLength();
-        FileHandler.writeToDisk("Server\\FileServer\\staticPath.jpg", inStream, contentLength);
+        FileHandler.writeToDisk("files\\staticPath.txt", inStream, contentLength);
     }
 
-    public void sendResponse() throws IOException{
-        // basically should get away by generating new core.GETRequest here
-        // because browser needs some kind of response
-
+    public void sendResponse() throws IOException {
         GETRequest postResponse = new GETRequest(outStream, filePath, headers);
         postResponse.sendResponse();
     }
 
-    private long getContentLength(){
+    private long getContentLength() {
         String len = headers.get("Content-Length");
-        if (len == null){
+        if (len == null) {
             return -1;
         }
 
