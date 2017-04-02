@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Properties>
-        <Property name="logPath">src\\logs</Property>
+        <Property name="logPath">logs</Property>
     </Properties>
     <Appenders>
         <RollingFile name="fileLogger" filename="${logPath}/logFile_1.log" filepattern="${logPath}/logFile_2.log">

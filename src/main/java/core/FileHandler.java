@@ -24,7 +24,6 @@ public class FileHandler {
         byte[] buffer = new byte[1024];
         FileInputStream fileStream = new FileInputStream(file);
 
-        // "HTTP/1.1 200 OK" is not part of the header. HTTP/1.1 is protocol version. 200 is status code and OK is status message.
         String responseHeader = "HTTP/1.1 200 OK\n" +
                 "Content-Length:" + file.length() + "\n" +
                 "Content-Type: " + contentType + "; charset=utf-8\n\r\n";

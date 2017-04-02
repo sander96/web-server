@@ -40,11 +40,11 @@ public class GETRequest {
                     FileHandler.sendFile(filePath, outStream);
                 }
             }
-        } catch (FileNotFoundException exception) {
-            logger.error("Error while sending response. Message: "+exception.getMessage());
+        } catch (FileNotFoundException e) {
+            logger.error("Error while sending response. Message: " + e.getMessage());
             outStream.write("HTTP/1.1 404 File Not Found\n\r\n".getBytes());
-        } catch (AccessRestrictedException exception) {
-            logger.error("Error while sending response. Message: "+exception.getMessage());
+        } catch (AccessRestrictedException e) {
+            logger.error("Error while sending response. Message: " + e.getMessage());
             outStream.write("HTTP/1.1 400 Bad Request\n\r\n".getBytes());
         }
     }

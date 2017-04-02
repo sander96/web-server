@@ -31,14 +31,14 @@ public class DynamicPage {
         page.append(htmlString);
         page.append("<a href=\"../\">../</a>\n");
 
-        for (int i = 0; i < files.length; ++i) {
+        for (String file : files) {
             String slash = "";
 
-            if (new File(folderPath + files[i]).isDirectory()) {
+            if (new File(folderPath + file).isDirectory()) {
                 slash = "/";
             }
 
-            String str = "<a href=" + "\"" + files[i] + slash + "\"" + ">" + files[i] + "</a>\n";
+            String str = "<a href=" + "\"" + file + slash + "\"" + ">" + file + slash + "</a>\n";
             page.append(str);
         }
 

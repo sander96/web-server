@@ -9,6 +9,7 @@ import java.net.Socket;
 
 public class Server {
     static final Logger logger = LogManager.getLogger(Server.class);
+
     public static void main(String[] args) throws IOException {
         logger.info("Server bootup");
         try (ServerSocket serverSocket = new ServerSocket(8080)) {

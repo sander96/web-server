@@ -52,9 +52,9 @@ public class Request implements Runnable {
             } finally {
                 socket.close();
             }
-        } catch (IOException ioEx) {
-            logger.error("IOException: " + ioEx.getMessage());
-            throw new RuntimeException(ioEx);
+        } catch (IOException e) {
+            logger.error("IOException: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
