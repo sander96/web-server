@@ -4,6 +4,8 @@ import serverexception.AccessRestrictedException;
 
 import java.io.*;
 
+import static core.Server.logger;
+
 public class FileHandler {
     public static synchronized void sendFile(String path, OutputStream outputStream)
             throws FileNotFoundException {
@@ -22,6 +24,7 @@ public class FileHandler {
         byte[] buffer = new byte[1024];
         FileInputStream fileStream = new FileInputStream(file);
 
+        // "HTTP/1.1 200 OK" is not part of the header. HTTP/1.1 is protocol version. 200 is status code and OK is status message.
         String responseHeader = "HTTP/1.1 200 OK\n" +
                 "Content-Length:" + file.length() + "\n" +
                 "Content-Type: " + contentType + "; charset=utf-8\n\r\n";
@@ -38,6 +41,7 @@ public class FileHandler {
                 outputStream.write(buffer, 0, size);
             }
         } catch (IOException exception) {
+            logger.error("Error while sending file. Message: "+exception.getMessage());
             throw new RuntimeException("Something went wrong with file sending process");
         }
     }
@@ -49,11 +53,12 @@ public class FileHandler {
         try (FileOutputStream fileWriter = new FileOutputStream(new File(path))) {
             byte[] buffer = new byte[1024];
             long fileLength = contentLength;
-
+            logger.info("Starting to write file");
             while (fileLength > 0) {
                 int bytesRead = inputStream.read(buffer);
 
                 if (bytesRead == -1) {
+                    logger.error("Error while writing file");
                     throw new RuntimeException("Client closed connection unexpectedly.");
                 }
                 fileWriter.write(buffer, 0, bytesRead);
@@ -70,10 +75,12 @@ public class FileHandler {
 
     public static void checkServerDirectory(File file) throws FileNotFoundException, AccessRestrictedException {
         if (!file.exists()) {
+            logger.error("File not found");
             throw new FileNotFoundException();
         }
 
         if (file.isAbsolute()) {
+            logger.error("Error: AccessRestricted");
             throw new AccessRestrictedException();
         }
     }

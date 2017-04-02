@@ -1,0 +1,31 @@
+10:30:14.896 [main] INFO  core.Server - Server bootup
+2017/04/02 10:30:42.367 [main] INFO  core.Server - Server bootup
+2017/04/02 10:31:27.833 [main] INFO  core.Server - Server bootup
+2017/04/02 11:46:25.830 [main] INFO  core.Server - Server bootup
+2017/04/02 11:47:28.055 [main] INFO  core.Server - Server bootup
+2017/04/02 11:52:03.972 [main] INFO  core.Server - Server bootup
+2017/04/02 11:52:37.061 [main] INFO  core.Server - Server bootup
+2017/04/02 11:52:43.452 [Thread-2] INFO  core.Server - New request thread started.
+2017/04/02 11:52:43.454 [Thread-1] INFO  core.Server - New request thread started.
+2017/04/02 11:52:44.300 [Thread-3] INFO  core.Server - New request thread started.
+2017/04/02 11:52:50.678 [Thread-4] INFO  core.Server - New request thread started.
+2017/04/02 11:52:52.486 [Thread-5] INFO  core.Server - New request thread started.
+2017/04/02 11:54:59.139 [main] INFO  core.Server - Server bootup
+2017/04/02 11:55:03.101 [Thread-1] INFO  core.Server - New request thread started.
+2017/04/02 11:55:03.101 [Thread-2] INFO  core.Server - New request thread started.
+2017/04/02 11:55:03.102 [Thread-4] INFO  core.Server - New request thread started.
+2017/04/02 11:55:03.102 [Thread-3] INFO  core.Server - New request thread started.
+2017/04/02 11:55:03.427 [Thread-3] ERROR core.Server - Client closed connection unexpectedly.
+2017/04/02 11:55:03.427 [Thread-1] ERROR core.Server - Client closed connection unexpectedly.
+2017/04/02 11:55:03.427 [Thread-2] ERROR core.Server - Client closed connection unexpectedly.
+2017/04/02 11:55:03.427 [Thread-4] ERROR core.Server - Client closed connection unexpectedly.
+2017/04/02 11:55:03.451 [Thread-5] INFO  core.Server - New request thread started.
+2017/04/02 11:55:03.454 [Thread-5] INFO  core.Server - Starting to send response
+2017/04/02 11:55:03.508 [Thread-6] INFO  core.Server - New request thread started.
+2017/04/02 11:55:03.509 [Thread-6] INFO  core.Server - Starting to send response
+11:55:03.332 [Thread-1] INFO  core.Server - New request thread started.
+11:55:03.933 [Thread-1] INFO  core.Server - Starting to send response
+11:55:04.035 [Thread-2] INFO  core.Server - New request thread started.
+11:55:04.046 [Thread-2] INFO  core.Server - Starting to send response
+2017/04/02 11:55:05.067 [Thread-7] INFO  core.Server - New request thread started.
+2017/04/02 11:55:05.069 [Thread-7] INFO  core.Server - Starting to send response

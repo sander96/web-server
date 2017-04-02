@@ -5,11 +5,14 @@ import serverexception.AccessRestrictedException;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import static core.Server.logger;
+
 public class DynamicPage {
     private StringBuilder page = new StringBuilder();
 
     public String createPage(String folderPath) throws FileNotFoundException, AccessRestrictedException {
         if (!folderPath.endsWith("/")) {
+            logger.error("DynamicPage did not get a folder as parameter");
             throw new RuntimeException("This was not a folder");
         }
 

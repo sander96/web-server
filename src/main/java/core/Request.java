@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import static core.Server.logger;
+
 public class Request implements Runnable {
     private Socket socket;
     private String request = "";
@@ -14,6 +16,7 @@ public class Request implements Runnable {
 
     @Override
     public void run() {
+        logger.info("New request thread started.");
         int headLen = 0;
         byte[] requestIn = new byte[8192];
         byte[] delimiterSequence = new byte[3];
@@ -25,6 +28,7 @@ public class Request implements Runnable {
                     byte currentByte = (byte) inputStream.read();
 
                     if (currentByte == -1) {    // TODO uurida exceptionit
+                        logger.error("Client closed connection unexpectedly.");
                         throw new RuntimeException("Client closed connection unexpectedly.");
                     }
 
@@ -49,6 +53,7 @@ public class Request implements Runnable {
                 socket.close();
             }
         } catch (IOException ioEx) {
+            logger.error("IOException: " + ioEx.getMessage());
             throw new RuntimeException(ioEx);
         }
     }
@@ -59,15 +64,14 @@ public class Request implements Runnable {
         Map<String, String> headers = new HashMap<>();
         String failPath = "";
 
+        //Making sure that filenames with spaces work
         for (int i = 1; i < methodLine.length - 1; ++i) {
             failPath += methodLine[i] + " ";
         }
-
         failPath = failPath.substring(0, failPath.length() - 1);
 
         for (int i = 1; i < requestLines.length - 1; ++i) {
             String[] headerData = requestLines[i].split(": ");
-
             headers.put(headerData[0],
                     headerData[1].substring(0, headerData[1].length() - 1));
         }
@@ -83,6 +87,7 @@ public class Request implements Runnable {
                 post.sendResponse();
                 break;
             default:
+                logger.error("Request method was not GET or POST");
                 outStream.write("HTTP/1.1 500 Internal Server Error\n\r\n".getBytes());
         }
 
