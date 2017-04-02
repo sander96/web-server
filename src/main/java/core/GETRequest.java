@@ -2,8 +2,12 @@ package core;
 
 import serverexception.AccessRestrictedException;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
+
+import static core.Server.logger;
 
 public class GETRequest {
     private OutputStream outStream;
@@ -17,6 +21,7 @@ public class GETRequest {
     }
 
     public void sendResponse() throws IOException {
+        logger.info("Starting to send response");
         try {
             if (filePath.equals("/")) {
                 FileHandler.sendFile("/index.html", outStream);
@@ -36,8 +41,10 @@ public class GETRequest {
                 }
             }
         } catch (FileNotFoundException exception) {
+            logger.error("Error while sending response. Message: "+exception.getMessage());
             outStream.write("HTTP/1.1 404 File Not Found\n\r\n".getBytes());
         } catch (AccessRestrictedException exception) {
+            logger.error("Error while sending response. Message: "+exception.getMessage());
             outStream.write("HTTP/1.1 400 Bad Request\n\r\n".getBytes());
         }
     }
