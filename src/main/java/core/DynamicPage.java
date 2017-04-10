@@ -4,21 +4,14 @@ import serverexception.AccessRestrictedException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-
-import static core.Server.logger;
+import java.util.Date;
 
 public class DynamicPage {
     private StringBuilder page = new StringBuilder();
 
     public String createPage(String folderPath) throws FileNotFoundException, AccessRestrictedException {
-        if (!folderPath.endsWith("/")) {
-            logger.error("DynamicPage did not get a folder as parameter");
-            throw new RuntimeException("This was not a folder");
-        }
-
-        FileHandler.checkServerDirectory(new File(folderPath));
-
-        String[] files = new File(folderPath).list();
+        File fileHandle = new File(folderPath);
+        FileHandler.checkServerDirectory(fileHandle);
 
         String htmlString = "<!doctype html>\n" +
                 "<html>\n" +
@@ -31,14 +24,27 @@ public class DynamicPage {
         page.append(htmlString);
         page.append("<a href=\"../\">../</a>\n");
 
-        for (String file : files) {
+        for (String filename : fileHandle.list()) { // TODO refactor
             String slash = "";
 
-            if (new File(folderPath + file).isDirectory()) {
+            File file = new File(folderPath + filename);
+
+            if (new File(folderPath + filename).isDirectory()) {
                 slash = "/";
             }
 
-            String str = "<a href=" + "\"" + file + slash + "\"" + ">" + file + slash + "</a>\n";
+            Date date = new Date(file.lastModified());
+            String dateString = String.format("%50s", filename + slash).replace(filename + slash, "");
+
+            String spaces = dateString;
+            String size = String.format("%50s", String.valueOf(file.length()));
+
+            if (slash.equals("/")) {
+                size = size.replace("0", "-");
+            }
+
+            String str = "<a href=" + "\"" + filename + slash + "\"" + ">" + filename + slash + "</a>" +
+                    spaces + date + size + "\n";
             page.append(str);
         }
 

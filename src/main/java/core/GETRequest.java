@@ -2,6 +2,7 @@ package core;
 
 import serverexception.AccessRestrictedException;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,6 +38,7 @@ public class GETRequest {
                     outStream.write(headers.getBytes());
                     outStream.write(page);
                 } else {
+                    FileHandler.checkServerDirectory(new File(filePath.substring(1)));
                     FileHandler.sendFile(filePath, outStream);
                 }
             }
