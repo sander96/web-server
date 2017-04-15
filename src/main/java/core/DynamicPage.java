@@ -1,5 +1,7 @@
 package core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
 import java.io.File;
@@ -8,6 +10,7 @@ import java.util.Date;
 
 public class DynamicPage {
     private StringBuilder page = new StringBuilder();
+    private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
     public String createPage(String folderPath) throws FileNotFoundException, AccessRestrictedException {
         File fileHandle = new File(folderPath);

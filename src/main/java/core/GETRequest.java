@@ -1,5 +1,7 @@
 package core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
 import java.io.File;
@@ -8,12 +10,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-import static core.Server.logger;
-
 public class GETRequest {
     private OutputStream outStream;
     private String filePath;
     private Map<String, String> headers;    // Not used yet
+    private static final Logger logger = LogManager.getLogger(GETRequest.class);
 
     public GETRequest(OutputStream outStream, String path, Map<String, String> headers) {
         this.outStream = outStream;

@@ -1,14 +1,20 @@
 package core;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import static core.Server.logger;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Request implements Runnable {
     private Socket socket;
     private String request = "";
+    private static final Logger logger = LogManager.getLogger(Request.class);
 
     public Request(Socket socket) {
         this.socket = socket;
@@ -64,7 +70,6 @@ public class Request implements Runnable {
         Map<String, String> headers = new HashMap<>();
         String failPath = "";
 
-        //Making sure that filenames with spaces work
         for (int i = 1; i < methodLine.length - 1; ++i) {
             failPath += methodLine[i] + " ";
         }

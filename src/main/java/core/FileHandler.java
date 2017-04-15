@@ -1,12 +1,13 @@
 package core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
 import java.io.*;
 
-import static core.Server.logger;
-
 public class FileHandler {
+    private static final Logger logger = LogManager.getLogger(FileHandler.class);
     public static synchronized void sendFile(String path, OutputStream outputStream)
             throws FileNotFoundException {
 
