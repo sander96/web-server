@@ -33,11 +33,6 @@ public class Request implements Runnable {
                 while (true) {
                     byte currentByte = (byte) inputStream.read();
 
-                    if (currentByte == -1) {    // TODO uurida exceptionit
-                        logger.error("Client closed connection unexpectedly.");
-                        throw new RuntimeException("Client closed connection unexpectedly.");
-                    }
-
                     if (headLen < 2) {
                         delimiterSequence[headLen] = currentByte;
                     } else {
