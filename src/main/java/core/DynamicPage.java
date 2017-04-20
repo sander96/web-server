@@ -7,25 +7,27 @@ import serverexception.AccessRestrictedException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Date;
+import java.util.Scanner;
 
 public class DynamicPage {
     private StringBuilder page = new StringBuilder();
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
-    public String createPage(String folderPath) throws FileNotFoundException, AccessRestrictedException {
+    public String createFilePage(String folderPath) throws FileNotFoundException, AccessRestrictedException {
         File fileHandle = new File(folderPath);
         FileHandler.checkServerDirectory(fileHandle);
 
-        String htmlString = "<!doctype html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "<meta charset=\"utf-8\">\n" +
-                "</head>\n<body>\n" +
-                "<h1>" + folderPath + "</h1><hr>\n" +
-                "<pre>\n";
+        StringBuilder htmlPage = new StringBuilder();
 
-        page.append(htmlString);
-        page.append("<a href=\"../\">../</a>\n");
+        try (Scanner scanner = new Scanner(new File("template.html"))) {
+            while (scanner.hasNextLine()) {
+                htmlPage.append(scanner.nextLine());
+            }
+        }
+
+        StringBuilder body = new StringBuilder();
+        body.append("<h1>" + folderPath + "</h1><hr><pre><a href=\"../\">../</a>\n");
+
 
         for (String filename : fileHandle.list()) { // TODO refactor
             String slash = "";
@@ -48,15 +50,27 @@ public class DynamicPage {
 
             String str = "<a href=" + "\"" + filename + slash + "\"" + ">" + filename + slash + "</a>" +
                     spaces + date + size + "\n";
-            page.append(str);
+            body.append(str);
         }
 
-        String end = "</pre>\n<hr>      <form action=\"\" method=\"post\" enctype=\"multipart/form-data\">\n" +
-                "         <input type=\"submit\" value=\"Upload file\">\n" +
-                "\t\t <input type=\"file\" name=\"fileName\">\n" +
-                "      </form></body>\n</html>";
-        page.append(end);
+        body.append("</pre><hr><form method=\"post\" enctype=\"multipart/form-data\">" +
+                "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form>");
 
-        return page.toString();
+        return htmlPage.toString().replace("#body#", body).replace("#title#", folderPath);
+    }
+
+    public String createIndexPage() throws FileNotFoundException {
+        StringBuilder htmlPage = new StringBuilder();
+
+        try (Scanner scanner = new Scanner(new File("template.html"))) {
+            while (scanner.hasNextLine()) {
+                htmlPage.append(scanner.nextLine());
+            }
+        }
+
+        StringBuilder body = new StringBuilder();
+        body.append("<a href=files/>files</a><br><a href=login.html>login</a>");
+
+        return htmlPage.toString().replace("#body#", body).replace("#title#", "Index");
     }
 }

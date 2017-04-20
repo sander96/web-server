@@ -8,6 +8,7 @@ import java.io.*;
 
 public class FileHandler {
     private static final Logger logger = LogManager.getLogger(FileHandler.class);
+
     public static synchronized void sendFile(String path, OutputStream outputStream)
             throws FileNotFoundException {
 
@@ -25,9 +26,10 @@ public class FileHandler {
         byte[] buffer = new byte[1024];
         FileInputStream fileStream = new FileInputStream(file);
 
+
         String responseHeader = "HTTP/1.1 200 OK\n" +
                 "Content-Length:" + file.length() + "\n" +
-                "Content-Type: " + contentType + "; charset=utf-8\n\r\n";
+                "Content-Type: " + contentType + "\n\r\n";
 
         try {
             outputStream.write(responseHeader.getBytes("UTF-8"));
@@ -41,7 +43,7 @@ public class FileHandler {
                 outputStream.write(buffer, 0, size);
             }
         } catch (IOException exception) {
-            logger.error("Error while sending file. Message: "+exception.getMessage());
+            logger.error("Error while sending file. Message: " + exception.getMessage());
             throw new RuntimeException("Something went wrong with file sending process");
         }
     }

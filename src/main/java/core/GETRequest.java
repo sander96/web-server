@@ -13,7 +13,7 @@ import java.util.Map;
 public class GETRequest {
     private OutputStream outStream;
     private String filePath;
-    private Map<String, String> headers;    // Not used yet
+    private Map<String, String> headers;
     private static final Logger logger = LogManager.getLogger(GETRequest.class);
 
     public GETRequest(OutputStream outStream, String path, Map<String, String> headers) {
@@ -26,10 +26,18 @@ public class GETRequest {
         logger.info("Starting to send response");
         try {
             if (filePath.equals("/")) {
-                FileHandler.sendFile("/index.html", outStream);
+                byte[] page = new DynamicPage().createIndexPage().getBytes("utf-8");
+                int pageLength = page.length;
+
+                String headers = "HTTP/1.1 200 OK\n" +
+                        "Content-Type: text/html\n" +
+                        "Content-Length: " + pageLength + "\n\r\n";
+
+                outStream.write(headers.getBytes());
+                outStream.write(page);
             } else {
                 if (filePath.endsWith("/")) {
-                    byte[] page = new DynamicPage().createPage(filePath.substring(1)).getBytes();
+                    byte[] page = new DynamicPage().createFilePage(filePath.substring(1)).getBytes("utf-8");
                     int pageLength = page.length;
 
                     String headers = "HTTP/1.1 200 OK\n" +
