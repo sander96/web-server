@@ -13,8 +13,8 @@ public class Response {
     private String scheme;
     private String[] pathParams;
     private String[] queryParams;
-    SpecializedInputreader inputreader;
-    OutputStream outputStream;
+    private SpecializedInputreader inputreader;
+    private OutputStream outputStream;
 
     public Response(Map<String, String> headers, Method method, Path path, String scheme, String[] pathParams,
                     String[] queryParams, SpecializedInputreader inputreader, OutputStream outputStream) {
