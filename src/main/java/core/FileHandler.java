@@ -5,14 +5,15 @@ import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
 import java.io.*;
+import java.nio.file.Path;
 
 public class FileHandler {
     private static final Logger logger = LogManager.getLogger(FileHandler.class);
 
-    public static synchronized void sendFile(String path, OutputStream outputStream)
+    public static synchronized void sendFile(Path path, OutputStream outputStream)
             throws FileNotFoundException {
 
-        File file = new File(path.substring(1));
+        File file = new File(path.toUri());
         String contentType;
 
         if (file.getName().endsWith(".html")) {
@@ -75,13 +76,13 @@ public class FileHandler {
         file.delete();
     }
 
-    public static void checkServerDirectory(File file) throws FileNotFoundException, AccessRestrictedException {
-        if (!file.exists()) {
+    public static void checkServerDirectory(Path path) throws FileNotFoundException, AccessRestrictedException {
+        if (!path.toFile().exists()) {
             logger.error("File not found");
             throw new FileNotFoundException();
         }
 
-        if (file.isAbsolute()) {
+        if (path.isAbsolute()) {
             logger.error("Error: AccessRestricted");
             throw new AccessRestrictedException();
         }

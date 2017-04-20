@@ -6,6 +6,7 @@ import serverexception.AccessRestrictedException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -13,9 +14,9 @@ public class DynamicPage {
     private StringBuilder page = new StringBuilder();
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
-    public String createFilePage(String folderPath) throws FileNotFoundException, AccessRestrictedException {
-        File fileHandle = new File(folderPath);
-        FileHandler.checkServerDirectory(fileHandle);
+    public String createFilePage(Path folderPath) throws FileNotFoundException, AccessRestrictedException {
+        File fileHandle = new File(folderPath.toUri());
+        FileHandler.checkServerDirectory(folderPath);
 
         StringBuilder htmlPage = new StringBuilder();
 
@@ -56,7 +57,7 @@ public class DynamicPage {
         body.append("</pre><hr><form method=\"post\" enctype=\"multipart/form-data\">" +
                 "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form>");
 
-        return htmlPage.toString().replace("#body#", body).replace("#title#", folderPath);
+        return htmlPage.toString().replace("#body#", body).replace("#title#", folderPath.toString());
     }
 
     public String createIndexPage() throws FileNotFoundException {

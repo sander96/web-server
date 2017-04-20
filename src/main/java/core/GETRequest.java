@@ -8,15 +8,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class GETRequest {
     private OutputStream outStream;
-    private String filePath;
+    private Path filePath;
     private Map<String, String> headers;
     private static final Logger logger = LogManager.getLogger(GETRequest.class);
 
-    public GETRequest(OutputStream outStream, String path, Map<String, String> headers) {
+    public GETRequest(OutputStream outStream, Path path, Map<String, String> headers) {
         this.outStream = outStream;
         this.filePath = path;
         this.headers = headers;
@@ -25,7 +26,7 @@ public class GETRequest {
     public void sendResponse() throws IOException {
         logger.info("Starting to send response");
         try {
-            if (filePath.equals("/")) {
+            if (filePath.toString().equals("")) {
                 byte[] page = new DynamicPage().createIndexPage().getBytes("utf-8");
                 int pageLength = page.length;
 
@@ -36,8 +37,8 @@ public class GETRequest {
                 outStream.write(headers.getBytes());
                 outStream.write(page);
             } else {
-                if (filePath.endsWith("/")) {
-                    byte[] page = new DynamicPage().createFilePage(filePath.substring(1)).getBytes("utf-8");
+                if (filePath.toFile().isDirectory()) {
+                    byte[] page = new DynamicPage().createFilePage(filePath).getBytes("utf-8");
                     int pageLength = page.length;
 
                     String headers = "HTTP/1.1 200 OK\n" +
@@ -47,7 +48,7 @@ public class GETRequest {
                     outStream.write(headers.getBytes());
                     outStream.write(page);
                 } else {
-                    FileHandler.checkServerDirectory(new File(filePath.substring(1)));
+                    FileHandler.checkServerDirectory(filePath);
                     FileHandler.sendFile(filePath, outStream);
                 }
             }
