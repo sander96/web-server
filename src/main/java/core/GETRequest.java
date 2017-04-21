@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,9 +29,19 @@ public class GETRequest {
                 byte[] page = new DynamicPage().createIndexPage().getBytes("utf-8");
                 int pageLength = page.length;
 
-                String headers = "HTTP/1.1 200 OK\n" +
-                        "Content-Type: text/html\n" +
-                        "Content-Length: " + pageLength + "\n\r\n";
+                String headers = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: text/html\r\n" +
+                        "Content-Length: " + pageLength + "\r\n\r\n";
+
+                outStream.write(headers.getBytes());
+                outStream.write(page);
+            } else if (filePath.toString().equals("login.html")){
+                byte[] page = new DynamicPage().createLoginPage(false).getBytes("utf-8");
+                int pageLength = page.length;
+
+                String headers = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: text/html\r\n" +
+                        "Content-Length: " + pageLength + "\r\n\r\n";
 
                 outStream.write(headers.getBytes());
                 outStream.write(page);

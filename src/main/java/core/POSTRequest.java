@@ -205,7 +205,15 @@ public class POSTRequest {
         String username = splitData[0].split("=")[1];
         String password = splitData[1].split("=")[1];
 
-        byte[] page = new DynamicPage().createIndexPage().getBytes("utf-8");
+        boolean loginStatus = false;
+        byte[] page;
+
+        if (loginStatus) {
+            page = new DynamicPage().createIndexPage().getBytes("utf-8");
+        } else {
+            page = new DynamicPage().createLoginPage(true).getBytes("utf-8");
+        }
+
         int pageLength = page.length;
 
         String headers = "HTTP/1.1 302 Found\n" + "Location: /\r\n" +

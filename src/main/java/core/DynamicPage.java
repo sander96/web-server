@@ -71,7 +71,46 @@ public class DynamicPage {
 
         StringBuilder body = new StringBuilder();
         body.append("<a href=files/>files</a><br><a href=login.html>login</a>");
+        body.append("<br><a href=register.html>register</a>");
 
         return htmlPage.toString().replace("#body#", body).replace("#title#", "Index");
+    }
+
+    public String createLoginPage(boolean wrongLogin) throws FileNotFoundException {
+        StringBuilder htmlPage = new StringBuilder();
+
+        try (Scanner scanner = new Scanner(new File("login-template.html"))) {
+            while (scanner.hasNextLine()) {
+                htmlPage.append(scanner.nextLine());
+            }
+        }
+
+        String message = "";
+
+        if(wrongLogin){
+            message = "<p>Wrong username or password</p>";
+        }
+
+        return htmlPage.toString().replace("#title#", "Login")
+                .replace("#button#", "Sign in").replace("#paragraph#", message);
+    }
+
+    public String createRegisterPage(boolean wrongUsername) throws FileNotFoundException {
+        StringBuilder htmlPage = new StringBuilder();
+
+        try (Scanner scanner = new Scanner(new File("login-template.html"))) {
+            while (scanner.hasNextLine()) {
+                htmlPage.append(scanner.nextLine());
+            }
+        }
+
+        String message = "";
+
+        if(wrongUsername){
+            message = "<p>Username already exists.</p>";
+        }
+
+        return htmlPage.toString().replace("#title#", "Register")
+                .replace("#button#", "Register").replace("#paragraph#", message);
     }
 }

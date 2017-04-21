@@ -32,16 +32,17 @@ public class Request implements Runnable {
     public void run() {
         try (SpecializedInputreader inputreader = new SpecializedInputreader(socket.getInputStream());
              OutputStream outputStream = socket.getOutputStream()) {
+
             String headData = new String(inputreader.read(HEAD_DELIMITER), "UTF-8");
             analyze(headData);
             Response response = new Response(headers, method, path, scheme, pathParams, queryParams, inputreader, outputStream);
             response.sendResponse();
         } catch (IOException ioEx) {
-            throw new RuntimeException();
+            throw new RuntimeException(ioEx);
         }
     }
 
-    private void analyze(String headData) throws UnsupportedEncodingException{
+    private void analyze(String headData) throws UnsupportedEncodingException {
         String[] lines = headData.split("\r\n");
         String[] methodLine = lines[0].split(" ");
 
