@@ -15,7 +15,7 @@ public class DynamicPage {
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
     public String createFilePage(Path folderPath) throws FileNotFoundException, AccessRestrictedException {
-        File fileHandle = new File(folderPath.toUri());
+        File fileHandle = new File(folderPath.toString());
         FileHandler.checkServerDirectory(folderPath);
 
         StringBuilder htmlPage = new StringBuilder();
@@ -30,12 +30,17 @@ public class DynamicPage {
         body.append("<h1>" + folderPath + "</h1><hr><pre><a href=\"../\">../</a>\n");
 
 
+        String slash1 = "";
+        if (fileHandle.isDirectory()) {
+            slash1 = "/";
+        }
+
         for (String filename : fileHandle.list()) { // TODO refactor
             String slash = "";
 
-            File file = new File(folderPath + filename);
+            File file = new File(folderPath + slash1 + filename);
 
-            if (new File(folderPath + filename).isDirectory()) {
+            if (new File(folderPath + slash1 + filename).isDirectory()) {
                 slash = "/";
             }
 

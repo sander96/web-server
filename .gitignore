@@ -1,6 +1,7 @@
 .idea
 *.iml
-target
+server/target
+app/target
 *.db
 
 # Compiled class file

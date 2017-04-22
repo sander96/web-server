@@ -103,11 +103,6 @@ public class POSTRequest {
         }
     }
 
-    public void sendResponse() throws IOException {
-        GETRequest postResponse = new GETRequest(outStream, filePath, headers);
-        postResponse.sendResponse();
-    }
-
     private long getContentLength() {
         String len = headers.get("Content-Length");
         if (len == null) {

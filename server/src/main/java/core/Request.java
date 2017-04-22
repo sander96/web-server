@@ -12,20 +12,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 public class Request implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger(Request.class);
     private static final byte[] HEAD_DELIMITER = "\r\n\r\n".getBytes();
     private Socket socket;
     private Map<String, String> headers = new HashMap<>();
+    private Map<Method, ResponseHandler> handlerMap;
     private Method method;
     private Path path;
     private String scheme;
-    private String[] pathParams;
-    private String[] queryParams;
+    private Map<String, String> pathParams;
+    private Map<String, String> queryParams;
 
     public Request(Socket socket) {
         this.socket = socket;
+        this.handlerMap = loadHandlers();
     }
 
     @Override
@@ -35,8 +38,8 @@ public class Request implements Runnable {
 
             String headData = new String(inputreader.read(HEAD_DELIMITER), "UTF-8");
             analyze(headData);
-            Response response = new Response(headers, method, path, scheme, pathParams, queryParams, inputreader, outputStream);
-            response.sendResponse();
+            handlerMap.get(method).sendResponse(headers, method, path, scheme, pathParams, queryParams,
+                            inputreader, outputStream);
         } catch (IOException ioEx) {
             throw new RuntimeException(ioEx);
         }
@@ -78,12 +81,20 @@ public class Request implements Runnable {
         }
     }
 
-    private String[] getPathParams(String initial) {
+    private Map<Method, ResponseHandler> loadHandlers() {
+        Map<Method, ResponseHandler> handlers = new HashMap<>();
+        for (ResponseHandler handler: ServiceLoader.load(ResponseHandler.class)) {
+            handlers.put(handler.getKey(), handler);
+        }
+        return handlers;
+    }
+
+    private Map<String, String> getPathParams(String initial) {
         // TODO method body
         return null;
     }
 
-    private String[] getQueryParams(String initial) {
+    private Map<String, String> getQueryParams(String initial) {
         // TODO method body
         return null;
     }

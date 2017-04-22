@@ -26,4 +26,9 @@ public class ByteList {
     public int getSize() {
         return size;
     }
+
+    public void clear() {
+        size = 0;
+        list = new byte[size];
+    }
 }
