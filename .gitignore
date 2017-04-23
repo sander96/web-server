@@ -2,6 +2,7 @@
 *.iml
 server/target
 app/target
+target
 *.db
 
 # Compiled class file

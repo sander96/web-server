@@ -6,6 +6,7 @@ import core.SpecializedInputreader;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -41,60 +42,57 @@ public class POSTRequest implements ResponseHandler {
 
     private void login() throws IOException, SQLException {
         byte[] buffer = inputReader.read(Integer.parseInt(headers.get("Content-Length")));
-
         String data = new String(buffer, "utf-8");
-        String[] splitData = data.split("&");   // TODO what if & is part of the username or the password
+        String[] splitData = data.split("&");
 
-        String username = splitData[0].split("=")[1];
-        String password = splitData[1].split("=")[1];
-
-        System.out.println(username);
+        String username = URLDecoder.decode(splitData[0].split("=")[1], "utf-8");
+        String password = URLDecoder.decode(splitData[1].split("=")[1], "utf-8");
 
         UserManager userManager = new UserManager(connection);
         boolean loginStatus = userManager.loginUser(username, password);
 
         byte[] page;
-        String headerTemp;
+        String headerString;
 
         if (loginStatus) {
-            headerTemp = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n" + "Set-Cookie: id=" + userManager.createCookie(username) + "; Max-Age=15\r\n\r\n";
-            outputStream.write(headerTemp.getBytes("utf-8"));
+            headerString = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n" + "Set-Cookie: id=" +
+                    userManager.createCookie(username) + "; Max-Age=3600\r\n\r\n";
+            outputStream.write(headerString.getBytes("utf-8"));
         } else {
             page = new DynamicPage().createLoginPage(true).getBytes("utf-8");
 
-            headerTemp = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + // 15 sec, temp
+            headerString = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" +
                     "Content-Length: " + page.length + "\r\n\r\n";
-            ;
-            outputStream.write(headerTemp.getBytes("utf-8"));
+
+            outputStream.write(headerString.getBytes("utf-8"));
             outputStream.write(page);
         }
     }
 
     private void register() throws IOException, SQLException {
         byte[] buffer = inputReader.read(Integer.parseInt(headers.get("Content-Length")));
-
         String data = new String(buffer, "utf-8");
+        String[] splitData = data.split("&");
 
-        String[] splitData = data.split("&");   // TODO what if & is part of the username or the password
-
-        String username = splitData[0].split("=")[1];
-        String password = splitData[1].split("=")[1];
+        String username = URLDecoder.decode(splitData[0].split("=")[1], "utf-8");
+        String password = URLDecoder.decode(splitData[1].split("=")[1], "utf-8");
 
         UserManager userManager = new UserManager(connection);
         boolean isRegistered = userManager.registerUser(username, password);
 
         byte[] page;
-        String headerTemp;
+        String headerString;
 
         if (isRegistered) {
-            headerTemp = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n" + "Set-Cookie: id=" + userManager.createCookie(username) + "; Max-Age=15\r\n\r\n";
-            outputStream.write(headerTemp.getBytes("utf-8"));
+            headerString = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n" + "Set-Cookie: id=" +
+                    userManager.createCookie(username) + "; Max-Age=3600\r\n\r\n";
+            outputStream.write(headerString.getBytes("utf-8"));
         } else {
             page = new DynamicPage().createRegisterPage(true).getBytes("utf-8");
-            headerTemp = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + // 15 sec, temp
+            headerString = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + // 15 sec, temp
                     "Content-Length: " + page.length + "\r\n\r\n";
             ;
-            outputStream.write(headerTemp.getBytes("utf-8"));
+            outputStream.write(headerString.getBytes("utf-8"));
             outputStream.write(page);
         }
     }

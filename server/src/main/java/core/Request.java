@@ -21,7 +21,7 @@ public class Request implements Runnable {
     private static final byte[] HEAD_DELIMITER = "\r\n\r\n".getBytes();
     private Socket socket;
     private Map<String, String> headers = new HashMap<>();
-    private Map<Method, ResponseHandler> handlerMap;    // TODO VIGA?
+    private Map<Method, ResponseHandler> handlerMap;
     private Method method;
     private Path path;
     private String scheme;

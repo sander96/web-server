@@ -6,13 +6,11 @@ import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.Scanner;
 
 public class DynamicPage {
     private StringBuilder page = new StringBuilder();
@@ -65,14 +63,15 @@ public class DynamicPage {
         String htmlPage = new String(Files.readAllBytes(Paths.get("template.html")));
 
         StringBuilder body = new StringBuilder();
-        body.append("<a href=files/>files</a>");
+        body.append("<a href=files/>Files</a>");
 
         if (cookie == null) {
-            body.append("<br><a href=login.html>login</a>");
-            body.append("<br><a href=register.html>register</a>");
+            body.append("<br><a href=login.html>Log in</a>");
+            body.append("<br><a href=register.html>Register</a>");
         }
 
         if (cookie != null) {
+            body.append("<br><a href=logout>Log out</a>");
             body.append("<br><p>Logged in as <b>" + username + "</b></p>");
         }
 

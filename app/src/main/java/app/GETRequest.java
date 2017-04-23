@@ -53,6 +53,11 @@ public class GETRequest implements ResponseHandler {
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
+            } else if (path.toString().equals("logout")) {
+                String responseHeaders = "HTTP/1.1 302 Found\r\nLocation: /\r\n" +
+                        "Set-Cookie: id=" + userManager.getUsername(cookie) +
+                        "; expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n";
+                outputStream.write(responseHeaders.getBytes());
             } else {
                 if (path.toFile().isDirectory()) {
                     byte[] page = new DynamicPage().createFilePage(path).getBytes("utf-8");

@@ -8,7 +8,6 @@ import java.util.Date;
 
 public class UserManager {
     private Connection connection;
-    private String cookie;
 
     public UserManager(Connection connection) {
         this.connection = connection;
@@ -65,9 +64,9 @@ public class UserManager {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        calendar.add(Calendar.SECOND, 1);
+        calendar.add(Calendar.HOUR_OF_DAY, 1);
 
-        cookie = username; // TEMPORARY
+        String cookie = username; // TEMPORARY
 
         addCookie.setString(1, cookie);
         addCookie.setLong(2, calendar.getTimeInMillis());
