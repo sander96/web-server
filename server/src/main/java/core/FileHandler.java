@@ -7,7 +7,7 @@ import serverexception.AccessRestrictedException;
 import java.io.*;
 import java.nio.file.Path;
 
-public class FileHandler {
+public class FileHandler {  // TODO better synchronization
     private static final Logger logger = LogManager.getLogger(FileHandler.class);
 
     public static synchronized void sendFile(Path path, OutputStream outputStream)
@@ -16,12 +16,18 @@ public class FileHandler {
         File file = new File(path.toUri());
         String contentType;
 
-        if (file.getName().endsWith(".html")) {
-            contentType = "text/html";
-        } else if (file.getName().endsWith(".css")) {
-            contentType = "text/css";
-        } else {
+        System.out.println(path.toString());
+
+        if (path.toString().substring(0, 5).equals("files")) {
             contentType = "multipart/form-data";
+        } else {
+            if (file.getName().endsWith(".html")) {
+                contentType = "text/html";
+            } else if (file.getName().endsWith(".css")) {
+                contentType = "text/css";
+            } else {
+                throw new RuntimeException();
+            }
         }
 
         byte[] buffer = new byte[1024];
