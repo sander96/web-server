@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-public class POSTRequest implements ResponseHandler{
+public class POSTRequest implements ResponseHandler {
     private SpecializedInputreader inputReader;
     private Connection connection;
     private OutputStream outputStream;
@@ -26,9 +26,9 @@ public class POSTRequest implements ResponseHandler{
         this.outputStream = outputStream;
         this.headers = headers;
 
-        if(path.toString().equals("login.html")){
+        if (path.toString().equals("login.html")) {
             login();
-        }else if(path.toString().equals("register.html")){
+        } else if (path.toString().equals("register.html")) {
             register();
         }
 
@@ -57,27 +57,23 @@ public class POSTRequest implements ResponseHandler{
         String headerTemp;
 
         if (loginStatus) {
-            page = new DynamicPage().createIndexPage().getBytes("utf-8");
-            headerTemp = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n";
+            headerTemp = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n" + "Set-Cookie: id=" + userManager.createCookie(username) + "; Max-Age=15\r\n\r\n";
+            outputStream.write(headerTemp.getBytes("utf-8"));
         } else {
             page = new DynamicPage().createLoginPage(true).getBytes("utf-8");
-            headerTemp = "HTTP/1.1 200 OK\r\n";
+
+            headerTemp = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + // 15 sec, temp
+                    "Content-Length: " + page.length + "\r\n\r\n";
+            ;
+            outputStream.write(headerTemp.getBytes("utf-8"));
+            outputStream.write(page);
         }
-
-        int pageLength = page.length;
-
-        String headers = headerTemp +
-                "Content-Type: text/html\r\n" + "Set-Cookie: id=" + userManager.createCookie(username) + "; Max-Age=15\r\n" + // 15 sec, temp
-                "Content-Length: " + pageLength + "\r\n\r\n";
-
-        outputStream.write(headers.getBytes("utf-8"));
-        outputStream.write(page);
     }
 
     private void register() throws IOException, SQLException {
         byte[] buffer = inputReader.read(Integer.parseInt(headers.get("Content-Length")));
 
-        String data = new String(buffer,"utf-8");
+        String data = new String(buffer, "utf-8");
 
         String[] splitData = data.split("&");   // TODO what if & is part of the username or the password
 
@@ -91,20 +87,15 @@ public class POSTRequest implements ResponseHandler{
         String headerTemp;
 
         if (isRegistered) {
-            page = new DynamicPage().createIndexPage().getBytes("utf-8");
-            headerTemp = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n";
+            headerTemp = "HTTP/1.1 302 Found\r\n" + "Location: /\r\n" + "Set-Cookie: id=" + userManager.createCookie(username) + "; Max-Age=15\r\n\r\n";
+            outputStream.write(headerTemp.getBytes("utf-8"));
         } else {
             page = new DynamicPage().createRegisterPage(true).getBytes("utf-8");
-            headerTemp = "HTTP/1.1 200 OK\r\n";
+            headerTemp = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + // 15 sec, temp
+                    "Content-Length: " + page.length + "\r\n\r\n";
+            ;
+            outputStream.write(headerTemp.getBytes("utf-8"));
+            outputStream.write(page);
         }
-
-        int pageLength = page.length;
-
-        String headers = headerTemp +
-                "Content-Type: text/html\r\n" + "Set-Cookie: id=" + userManager.createCookie(username) + "; Max-Age=15\r\n" + // 15 sec, temp
-                "Content-Length: " + pageLength + "\r\n\r\n";
-
-        outputStream.write(headers.getBytes("utf-8"));
-        outputStream.write(page);
     }
 }

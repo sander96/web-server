@@ -61,21 +61,32 @@ public class UserManager {
     }
 
     public String createCookie(String username) throws SQLException {  // TODO hash cookie
-        //PreparedStatement addCookie = connection.prepareStatement("UPDATE user SET cookie = ?, cookie_expiration ? WHERE username = " + username);  // TODO syntax error?
+        PreparedStatement addCookie = connection.prepareStatement("UPDATE user SET cookie = ?, cookie_expiration = ? WHERE username = ?");
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        calendar.add(Calendar.HOUR_OF_DAY, 1);
-        calendar.getTimeInMillis();
+        calendar.add(Calendar.SECOND, 1);
 
         cookie = username; // TEMPORARY
+
+        addCookie.setString(1, cookie);
+        addCookie.setLong(2, calendar.getTimeInMillis());
+        addCookie.setString(3, username);
+        addCookie.executeUpdate();
 
         return cookie;
     }
 
-    public boolean checkCookie(String cookie, String username) throws SQLException {
-        PreparedStatement checkCookie = connection.prepareStatement("SELECT cookie_expiration FROM user WHERE username =" +     // TODO syntax error?
-                username + " AND cookie = " + cookie);
+    public boolean checkCookie(String cookie) throws SQLException {
+        if (cookie == null) {
+            return false;
+        }
+
+        PreparedStatement checkCookie = connection.prepareStatement("SELECT cookie_expiration FROM user WHERE cookie = ?");
+        cookie = cookie.replace("id=", "");
+
+        checkCookie.setString(1, cookie);
+        checkCookie.executeQuery();
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -88,6 +99,26 @@ public class UserManager {
             }
         }
         return false;
+    }
+
+    public String getUsername(String cookie) throws SQLException {
+        if (cookie != null) {
+            cookie = cookie.replace("id=", "");
+        }
+
+        String username = new String();
+
+        if (checkCookie(cookie)) {
+            PreparedStatement retrieveUsername = connection.prepareStatement("SELECT username FROM user WHERE cookie = ?");
+            retrieveUsername.setString(1, cookie);
+            ResultSet result = retrieveUsername.executeQuery();
+
+            if (result.next()) {
+                username = result.getString(1);
+            }
+        }
+
+        return username;
     }
 
     private String hash(String password) {

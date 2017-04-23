@@ -7,7 +7,10 @@ import serverexception.AccessRestrictedException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -15,28 +18,21 @@ public class DynamicPage {
     private StringBuilder page = new StringBuilder();
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
-    public String createFilePage(Path folderPath) throws FileNotFoundException, AccessRestrictedException {
+    public String createFilePage(Path folderPath) throws IOException, AccessRestrictedException {
         File fileHandle = new File(folderPath.toString());
         FileHandler.checkServerDirectory(folderPath);
 
-        StringBuilder htmlPage = new StringBuilder();
-
-        try (Scanner scanner = new Scanner(new File("template.html"))) {
-            while (scanner.hasNextLine()) {
-                htmlPage.append(scanner.nextLine());
-            }
-        }
+        String htmlPage = new String(Files.readAllBytes(Paths.get("template.html")));
 
         StringBuilder body = new StringBuilder();
         body.append("<h1>" + folderPath + "</h1><hr><pre><a href=\"../\">../</a>\n");
-
 
         String slash1 = "";
         if (fileHandle.isDirectory()) {
             slash1 = "/";
         }
 
-        for (String filename : fileHandle.list()) { // TODO refactor
+        for (String filename : fileHandle.list()) {
             String slash = "";
 
             File file = new File(folderPath + slash1 + filename);
@@ -48,75 +44,62 @@ public class DynamicPage {
             Date date = new Date(file.lastModified());
             String dateString = String.format("%50s", filename + slash).replace(filename + slash, "");
 
-            String spaces = dateString;
-            String size = String.format("%50s", String.valueOf(file.length()));
+            String fileSize = String.format("%50s", String.valueOf(file.length()));
 
             if (slash.equals("/")) {
-                size = size.replace("0", "-");
+                fileSize = fileSize.replace("0", "-");
             }
 
             String str = "<a href=" + "\"" + filename + slash + "\"" + ">" + filename + slash + "</a>" +
-                    spaces + date + size + "\n";
+                    dateString + date + fileSize + "\n";
             body.append(str);
         }
 
         body.append("</pre><hr><form method=\"post\" enctype=\"multipart/form-data\">" +
                 "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form>");
 
-        return htmlPage.toString().replace("#body#", body).replace("#title#", folderPath.toString());
+        return htmlPage.replace("#body#", body).replace("#title#", folderPath.toString());
     }
 
-    public String createIndexPage() throws FileNotFoundException {
-        StringBuilder htmlPage = new StringBuilder();
-
-        try (Scanner scanner = new Scanner(new File("template.html"))) {
-            while (scanner.hasNextLine()) {
-                htmlPage.append(scanner.nextLine());
-            }
-        }
+    public String createIndexPage(String cookie, String username) throws IOException {
+        String htmlPage = new String(Files.readAllBytes(Paths.get("template.html")));
 
         StringBuilder body = new StringBuilder();
-        body.append("<a href=files/>files</a><br><a href=login.html>login</a>");
-        body.append("<br><a href=register.html>register</a>");
+        body.append("<a href=files/>files</a>");
 
-        return htmlPage.toString().replace("#body#", body).replace("#title#", "Index");
-    }
-
-    public String createLoginPage(boolean wrongLogin) throws FileNotFoundException {
-        StringBuilder htmlPage = new StringBuilder();
-
-        try (Scanner scanner = new Scanner(new File("login-template.html"))) {
-            while (scanner.hasNextLine()) {
-                htmlPage.append(scanner.nextLine());
-            }
+        if (cookie == null) {
+            body.append("<br><a href=login.html>login</a>");
+            body.append("<br><a href=register.html>register</a>");
         }
 
+        if (cookie != null) {
+            body.append("<br><p>Logged in as <b>" + username + "</b></p>");
+        }
+
+        return htmlPage.replace("#body#", body).replace("#title#", "Index");
+    }
+
+    public String createLoginPage(boolean wrongLogin) throws IOException {
+        String htmlPage = new String(Files.readAllBytes(Paths.get("login-template.html")));
         String message = "";
 
-        if(wrongLogin){
+        if (wrongLogin) {
             message = "<p>Wrong username or password</p>";
         }
 
-        return htmlPage.toString().replace("#title#", "Login")
+        return htmlPage.replace("#title#", "Login")
                 .replace("#button#", "Sign in").replace("#paragraph#", message);
     }
 
-    public String createRegisterPage(boolean wrongUsername) throws FileNotFoundException {
-        StringBuilder htmlPage = new StringBuilder();
-
-        try (Scanner scanner = new Scanner(new File("login-template.html"))) {
-            while (scanner.hasNextLine()) {
-                htmlPage.append(scanner.nextLine());
-            }
-        }
-
+    public String createRegisterPage(boolean wrongUsername) throws IOException {
+        String htmlPage = new String(Files.readAllBytes(Paths.get("login-template.html")));
         String message = "";
 
-        if(wrongUsername){
+        if (wrongUsername) {
             message = "<p>Username already exists.</p>";
         }
 
-        return htmlPage.toString().replace("#title#", "Register")
+        return htmlPage.replace("#title#", "Register")
                 .replace("#button#", "Register").replace("#paragraph#", message);
     }
 }

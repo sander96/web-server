@@ -12,12 +12,19 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-public class GETRequest implements ResponseHandler{
+public class GETRequest implements ResponseHandler {
     public void sendResponse(Map<String, String> headers, Method method, Path path, String scheme, Map<String, String> pathParams,
-                             Map<String, String> queryParams, SpecializedInputreader inputreader, OutputStream outputStream, Connection connection) throws IOException {
+                             Map<String, String> queryParams, SpecializedInputreader inputreader, OutputStream outputStream, Connection connection) throws IOException, SQLException {
         try {
+            String cookie = headers.get("Cookie");
+            UserManager userManager = new UserManager(connection);
+
+            if (cookie != null && !userManager.checkCookie(cookie)) {
+                cookie = null;
+            }
+
             if (path.toString().equals("")) {
-                byte[] page = new DynamicPage().createIndexPage().getBytes("utf-8");
+                byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie)).getBytes("utf-8");
                 int pageLength = page.length;
 
                 String responseHeaders = "HTTP/1.1 200 OK\r\n" +
@@ -26,7 +33,7 @@ public class GETRequest implements ResponseHandler{
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
-            } else if (path.toString().equals("login.html")){   // TODO refactor code
+            } else if (path.toString().equals("login.html")) {   // TODO refactor code
                 byte[] page = new DynamicPage().createLoginPage(false).getBytes("utf-8");
                 int pageLength = page.length;
 
@@ -36,7 +43,7 @@ public class GETRequest implements ResponseHandler{
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
-            } else if (path.toString().equals("register.html")){
+            } else if (path.toString().equals("register.html")) {
                 byte[] page = new DynamicPage().createRegisterPage(false).getBytes("utf-8");
                 int pageLength = page.length;
 
