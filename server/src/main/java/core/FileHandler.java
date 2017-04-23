@@ -16,8 +16,6 @@ public class FileHandler {  // TODO better synchronization
         File file = new File(path.toUri());
         String contentType;
 
-        System.out.println(path.toString());
-
         if (path.toString().substring(0, 5).equals("files")) {
             contentType = "multipart/form-data";
         } else {
@@ -26,7 +24,7 @@ public class FileHandler {  // TODO better synchronization
             } else if (file.getName().endsWith(".css")) {
                 contentType = "text/css";
             } else {
-                throw new RuntimeException();
+                contentType = "multipart/form-data";
             }
         }
 
