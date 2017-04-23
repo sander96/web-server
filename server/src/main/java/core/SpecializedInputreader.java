@@ -30,6 +30,24 @@ public class SpecializedInputreader implements Closeable {
         return endResult;
     }
 
+    public byte[] read(int length) throws IOException { // TODO TEMPORARY HACK
+        byte[] result = new byte[length];
+
+        if(unusedBytesCounter <= length){
+            result = unusedBytes;
+            unusedBytesCounter = 0;
+            unusedBytes = new byte[unusedBytesCounter];
+        }else{
+            byte[] tmp = read();
+            System.arraycopy(tmp, 0, result, 0, length);
+            unusedBytesCounter = tmp.length - length;
+            unusedBytes = new byte[unusedBytesCounter];
+            System.arraycopy(tmp, length, unusedBytes, 0, unusedBytesCounter);
+        }
+
+        return result;
+    }
+
     public byte[] read(byte[] delimiterSequence) throws IOException {
         ByteList endResult = new ByteList();
 

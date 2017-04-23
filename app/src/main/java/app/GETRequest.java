@@ -2,22 +2,19 @@ package app;
 
 
 import core.*;
-import core.POSTRequest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
 public class GETRequest implements ResponseHandler{
-    private static final Logger logger = LogManager.getLogger(POSTRequest.class);
-
     public void sendResponse(Map<String, String> headers, Method method, Path path, String scheme, Map<String, String> pathParams,
-                             Map<String, String> queryParams, SpecializedInputreader inputreader, OutputStream outputStream) throws IOException {
+                             Map<String, String> queryParams, SpecializedInputreader inputreader, OutputStream outputStream, Connection connection) throws IOException {
         try {
             if (path.toString().equals("")) {
                 byte[] page = new DynamicPage().createIndexPage().getBytes("utf-8");
@@ -29,8 +26,18 @@ public class GETRequest implements ResponseHandler{
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
-            } else if (path.toString().equals("login.html")){
+            } else if (path.toString().equals("login.html")){   // TODO refactor code
                 byte[] page = new DynamicPage().createLoginPage(false).getBytes("utf-8");
+                int pageLength = page.length;
+
+                String responseHeaders = "HTTP/1.1 200 OK\r\n" +
+                        "Content-Type: text/html\r\n" +
+                        "Content-Length: " + pageLength + "\r\n\r\n";
+
+                outputStream.write(responseHeaders.getBytes());
+                outputStream.write(page);
+            } else if (path.toString().equals("register.html")){
+                byte[] page = new DynamicPage().createRegisterPage(false).getBytes("utf-8");
                 int pageLength = page.length;
 
                 String responseHeaders = "HTTP/1.1 200 OK\r\n" +

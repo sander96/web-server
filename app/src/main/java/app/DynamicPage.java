@@ -1,5 +1,6 @@
-package core;
+package app;
 
+import core.FileHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;

@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -19,16 +21,18 @@ public class Request implements Runnable {
     private static final byte[] HEAD_DELIMITER = "\r\n\r\n".getBytes();
     private Socket socket;
     private Map<String, String> headers = new HashMap<>();
-    private Map<Method, ResponseHandler> handlerMap;
+    private Map<Method, ResponseHandler> handlerMap;    // TODO VIGA?
     private Method method;
     private Path path;
     private String scheme;
     private Map<String, String> pathParams;
     private Map<String, String> queryParams;
+    private Connection connection;
 
-    public Request(Socket socket) {
+    public Request(Socket socket, Connection connection) {
         this.socket = socket;
         this.handlerMap = loadHandlers();
+        this.connection = connection;
     }
 
     @Override
@@ -38,10 +42,11 @@ public class Request implements Runnable {
 
             String headData = new String(inputreader.read(HEAD_DELIMITER), "UTF-8");
             analyze(headData);
+
             handlerMap.get(method).sendResponse(headers, method, path, scheme, pathParams, queryParams,
-                            inputreader, outputStream);
-        } catch (IOException ioEx) {
-            throw new RuntimeException(ioEx);
+                            inputreader, outputStream, connection);
+        } catch (IOException | SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
