@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 import java.util.Date;
 
 public class DynamicPage {
-    private StringBuilder page = new StringBuilder();
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
     public String createFilePage(Path folderPath) throws IOException, AccessRestrictedException {

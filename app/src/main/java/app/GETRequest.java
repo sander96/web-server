@@ -4,6 +4,7 @@ package app;
 import core.*;
 import serverexception.AccessRestrictedException;
 
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class GETRequest implements ResponseHandler {
     public void sendResponse(Map<String, String> headers, Method method, Path path, String scheme, Map<String, String> pathParams,
-                             Map<String, String> queryParams, SpecializedInputreader inputreader, OutputStream outputStream, Connection connection) throws IOException, SQLException {
+                             Map<String, String> queryParams, BufferedInputStream inputStream, OutputStream outputStream, Connection connection) throws IOException, SQLException {
         try {
             String cookie = headers.get("Cookie");
             UserManager userManager = new UserManager(connection);
@@ -24,7 +25,7 @@ public class GETRequest implements ResponseHandler {
             }
 
             if (path.toString().equals("")) {
-                byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie)).getBytes("utf-8");
+                byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie)).getBytes("UTF-8");
                 int pageLength = page.length;
 
                 String responseHeaders = "HTTP/1.1 200 OK\r\n" +
@@ -34,7 +35,7 @@ public class GETRequest implements ResponseHandler {
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
             } else if (path.toString().equals("login.html")) {   // TODO refactor code
-                byte[] page = new DynamicPage().createLoginPage(false).getBytes("utf-8");
+                byte[] page = new DynamicPage().createLoginPage(false).getBytes("UTF-8");
                 int pageLength = page.length;
 
                 String responseHeaders = "HTTP/1.1 200 OK\r\n" +
@@ -44,7 +45,7 @@ public class GETRequest implements ResponseHandler {
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
             } else if (path.toString().equals("register.html")) {
-                byte[] page = new DynamicPage().createRegisterPage(false).getBytes("utf-8");
+                byte[] page = new DynamicPage().createRegisterPage(false).getBytes("UTF-8");
                 int pageLength = page.length;
 
                 String responseHeaders = "HTTP/1.1 200 OK\r\n" +
@@ -60,7 +61,7 @@ public class GETRequest implements ResponseHandler {
                 outputStream.write(responseHeaders.getBytes());
             } else {
                 if (path.toFile().isDirectory()) {
-                    byte[] page = new DynamicPage().createFilePage(path).getBytes("utf-8");
+                    byte[] page = new DynamicPage().createFilePage(path).getBytes("UTF-8");
                     int pageLength = page.length;
 
                     String responseHeaders = "HTTP/1.1 200 OK\n" +
