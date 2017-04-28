@@ -23,7 +23,7 @@ public class Request implements Runnable {
     private Map<String, String> headers = new HashMap<>();
     private Map<Method, ResponseHandler> handlerMap;
     private Method method;
-    private Path path;
+    private String path;
     private String protocol;
     private Map<String, String> pathParams;
     private Map<String, String> queryParams;
@@ -82,15 +82,15 @@ public class Request implements Runnable {
         int queryParamsStart = methodLine[1].indexOf('?');
 
         if (pathParamsStart < 0 && queryParamsStart < 0) {
-            path = Paths.get(URLDecoder.decode(methodLine[1].substring(1), "UTF-8"));
+            path = URLDecoder.decode(methodLine[1].substring(1), "UTF-8");
         } else if (pathParamsStart >= 0 && queryParamsStart < 0) {
-            path = Paths.get(URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8"));
+            path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
             pathParams = getPathParams(methodLine[1].substring(pathParamsStart));
         } else if (pathParamsStart < 0 && queryParamsStart >= 0) {
-            path = Paths.get(URLDecoder.decode(methodLine[1].substring(1, queryParamsStart), "UTF-8"));
+            path = URLDecoder.decode(methodLine[1].substring(1, queryParamsStart), "UTF-8");
             queryParams = getQueryParams(methodLine[1].substring(queryParamsStart));
         } else {
-            path = Paths.get(URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8"));
+            path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
             pathParams = getPathParams(methodLine[1].substring(pathParamsStart, queryParamsStart));
             queryParams = getQueryParams(methodLine[1].substring(queryParamsStart));
         }

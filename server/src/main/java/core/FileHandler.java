@@ -10,13 +10,13 @@ import java.nio.file.Path;
 public class FileHandler {  // TODO better synchronization
     private static final Logger logger = LogManager.getLogger(FileHandler.class);
 
-    public static synchronized void sendFile(Path path, OutputStream outputStream)
+    public static synchronized void sendFile(String path, OutputStream outputStream)
             throws FileNotFoundException {
 
-        File file = new File(path.toUri());
+        File file = new File(path);
         String contentType;
 
-        if (path.toString().substring(0, 5).equals("files")) {
+        if (path.substring(0, 5).equals("files")) {
             contentType = "multipart/form-data";
         } else {
             if (file.getName().endsWith(".html")) {
@@ -80,13 +80,13 @@ public class FileHandler {  // TODO better synchronization
         file.delete();
     }
 
-    public static void checkServerDirectory(Path path) throws FileNotFoundException, AccessRestrictedException {
-        if (!path.toFile().exists()) {
+    public static void checkServerDirectory(File file) throws FileNotFoundException, AccessRestrictedException {
+        if (!file.exists()) {
             logger.error("File not found");
             throw new FileNotFoundException();
         }
 
-        if (path.isAbsolute()) {
+        if (file.isAbsolute()) {
             logger.error("Error: AccessRestricted");
             throw new AccessRestrictedException();
         }

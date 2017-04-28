@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface ResponseHandler {
 
-    void sendResponse(Map<String, String> headers, Method method, Path path, String scheme, Map<String, String> pathParams,
+    void sendResponse(Map<String, String> headers, Method method, String path, String scheme, Map<String, String> pathParams,
                       Map<String, String> queryParams, BufferedInputStream inputStream, OutputStream outputStream, Connection connection) throws IOException, SQLException;
 
     Method getKey();

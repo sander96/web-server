@@ -19,7 +19,7 @@ public class POSTRequest implements ResponseHandler {
     private Map<String, String> headers;
 
     @Override
-    public void sendResponse(Map<String, String> headers, Method method, Path path, String scheme, Map<String, String> pathParams,
+    public void sendResponse(Map<String, String> headers, Method method, String path, String scheme, Map<String, String> pathParams,
                              Map<String, String> queryParams, BufferedInputStream inputStream, OutputStream outputStream, Connection connection) throws IOException, SQLException {
 
         this.inputStream = inputStream;
@@ -27,9 +27,9 @@ public class POSTRequest implements ResponseHandler {
         this.outputStream = outputStream;
         this.headers = headers;
 
-        if (path.toString().equals("login.html")) {
+        if (path.equals("login.html")) {
             login();
-        } else if (path.toString().equals("register.html")) {
+        } else if (path.equals("register.html")) {
             register();
         }
 

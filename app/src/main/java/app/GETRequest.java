@@ -4,17 +4,14 @@ package app;
 import core.*;
 import serverexception.AccessRestrictedException;
 
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
 public class GETRequest implements ResponseHandler {
-    public void sendResponse(Map<String, String> headers, Method method, Path path, String scheme, Map<String, String> pathParams,
+    public void sendResponse(Map<String, String> headers, Method method, String path, String scheme, Map<String, String> pathParams,
                              Map<String, String> queryParams, BufferedInputStream inputStream, OutputStream outputStream, Connection connection) throws IOException, SQLException {
         try {
             String cookie = headers.get("Cookie");
@@ -24,7 +21,7 @@ public class GETRequest implements ResponseHandler {
                 cookie = null;
             }
 
-            if (path.toString().equals("")) {
+            if (path.equals("")) {
                 byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie)).getBytes("UTF-8");
                 int pageLength = page.length;
 
@@ -34,7 +31,7 @@ public class GETRequest implements ResponseHandler {
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
-            } else if (path.toString().equals("login.html")) {   // TODO refactor code
+            } else if (path.equals("login.html")) {   // TODO refactor code
                 byte[] page = new DynamicPage().createLoginPage(false).getBytes("UTF-8");
                 int pageLength = page.length;
 
@@ -44,7 +41,7 @@ public class GETRequest implements ResponseHandler {
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
-            } else if (path.toString().equals("register.html")) {
+            } else if (path.equals("register.html")) {
                 byte[] page = new DynamicPage().createRegisterPage(false).getBytes("UTF-8");
                 int pageLength = page.length;
 
@@ -54,13 +51,13 @@ public class GETRequest implements ResponseHandler {
 
                 outputStream.write(responseHeaders.getBytes());
                 outputStream.write(page);
-            } else if (path.toString().equals("logout")) {
+            } else if (path.equals("logout")) {
                 String responseHeaders = "HTTP/1.1 302 Found\r\nLocation: /\r\n" +
                         "Set-Cookie: id=" + userManager.getUsername(cookie) +
                         "; expires=Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n";
                 outputStream.write(responseHeaders.getBytes());
             } else {
-                if (path.toFile().isDirectory()) {
+                if (new File(path).isDirectory()) {
                     byte[] page = new DynamicPage().createFilePage(path).getBytes("UTF-8");
                     int pageLength = page.length;
 
@@ -71,7 +68,7 @@ public class GETRequest implements ResponseHandler {
                     outputStream.write(responseHeaders.getBytes());
                     outputStream.write(page);
                 } else {
-                    FileHandler.checkServerDirectory(path);
+                    FileHandler.checkServerDirectory(new File(path));
                     FileHandler.sendFile(path, outputStream);
                 }
             }

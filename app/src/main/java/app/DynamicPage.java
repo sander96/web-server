@@ -15,26 +15,21 @@ import java.util.Date;
 public class DynamicPage {
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
-    public String createFilePage(Path folderPath) throws IOException, AccessRestrictedException {
-        File fileHandle = new File(folderPath.toString());
-        FileHandler.checkServerDirectory(folderPath);
+    public String createFilePage(String folderPath) throws IOException, AccessRestrictedException {
+        File fileHandle = new File(folderPath);
+        FileHandler.checkServerDirectory(fileHandle);
 
         String htmlPage = new String(Files.readAllBytes(Paths.get("template.html")));
 
         StringBuilder body = new StringBuilder();
         body.append("<h1>" + folderPath + "</h1><hr><pre><a href=\"../\">../</a>\n");
 
-        String slash1 = "";
-        if (fileHandle.isDirectory()) {
-            slash1 = "/";
-        }
-
         for (String filename : fileHandle.list()) {
             String slash = "";
 
-            File file = new File(folderPath + slash1 + filename);
+            File file = new File(folderPath + filename);
 
-            if (new File(folderPath + slash1 + filename).isDirectory()) {
+            if (new File(folderPath + filename).isDirectory()) {
                 slash = "/";
             }
 
@@ -55,7 +50,7 @@ public class DynamicPage {
         body.append("</pre><hr><form method=\"post\" enctype=\"multipart/form-data\">" +
                 "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form>");
 
-        return htmlPage.replace("#body#", body).replace("#title#", folderPath.toString());
+        return htmlPage.replace("#body#", body).replace("#title#", folderPath);
     }
 
     public String createIndexPage(String cookie, String username) throws IOException {
