@@ -13,16 +13,16 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Server {
-    private static final Logger logger = LogManager.getLogger(Server.class);
+    private static final Logger LOGGER = LogManager.getLogger(Server.class);
 
     public static void main(String[] args) throws IOException, SQLException {
-        logger.info("Server bootup");
+        LOGGER.info("Server bootup");
 
-        String url = "jdbc:h2:./database";
+        String url = "jdbc:h2:./data/database/database";
         try (ServerSocket serverSocket = new ServerSocket(8080);
              Connection connection = DriverManager.getConnection(url)) {
 
-            RunScript.execute(connection, new FileReader("table.sql"));
+            RunScript.execute(connection, new FileReader("data/table.sql"));
 
             while (true) {
                 Socket socket = serverSocket.accept();

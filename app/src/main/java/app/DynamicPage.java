@@ -1,6 +1,5 @@
 package app;
 
-import core.FileHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import serverexception.AccessRestrictedException;
@@ -8,21 +7,20 @@ import serverexception.AccessRestrictedException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
 public class DynamicPage {
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
-    public String createFilePage(String folderPath) throws IOException, AccessRestrictedException {
+    public String createFilePage(String folderPath, boolean isUser) throws IOException, AccessRestrictedException {
         File fileHandle = new File(folderPath);
         FileHandler.checkServerDirectory(fileHandle);
 
-        String htmlPage = new String(Files.readAllBytes(Paths.get("template.html")));
+        String htmlPage = new String(Files.readAllBytes(Paths.get("data/template.html")));
 
         StringBuilder body = new StringBuilder();
-        body.append("<h1>" + folderPath + "</h1><hr><pre><a href=\"../\">../</a>\n");
+        body.append("<h1>" + folderPath.substring(4) + "</h1><hr><pre><a href=\"../\">../</a>\n");
 
         for (String filename : fileHandle.list()) {
             String slash = "";
@@ -47,14 +45,18 @@ public class DynamicPage {
             body.append(str);
         }
 
-        body.append("</pre><hr><form method=\"post\" enctype=\"multipart/form-data\">" +
-                "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form>");
+        body.append("</pre><hr><div><form method=\"post\" enctype=\"multipart/form-data\">" +
+                "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form></div>");
 
-        return htmlPage.replace("#body#", body).replace("#title#", folderPath);
+        if (isUser) {
+            body.append("<div><form method=\"get\"><input type=\"submit\" name=\"checkbox-delete\" value=\"Delete files\"></form></div>");
+        }
+
+        return htmlPage.replace("#body#", body).replace("#title#", folderPath.substring(4));
     }
 
     public String createIndexPage(String cookie, String username) throws IOException {
-        String htmlPage = new String(Files.readAllBytes(Paths.get("template.html")));
+        String htmlPage = new String(Files.readAllBytes(Paths.get("data/index-template.html")));
 
         StringBuilder body = new StringBuilder();
         body.append("<a href=files/>Files</a>");
@@ -73,7 +75,7 @@ public class DynamicPage {
     }
 
     public String createLoginPage(boolean wrongLogin) throws IOException {
-        String htmlPage = new String(Files.readAllBytes(Paths.get("login-template.html")));
+        String htmlPage = new String(Files.readAllBytes(Paths.get("data/login-template.html")));
         String message = "";
 
         if (wrongLogin) {
@@ -85,7 +87,7 @@ public class DynamicPage {
     }
 
     public String createRegisterPage(boolean wrongUsername) throws IOException {
-        String htmlPage = new String(Files.readAllBytes(Paths.get("login-template.html")));
+        String htmlPage = new String(Files.readAllBytes(Paths.get("data/login-template.html")));
         String message = "";
 
         if (wrongUsername) {

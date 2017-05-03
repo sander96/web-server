@@ -28,6 +28,7 @@ public class Request implements Runnable {
     private Map<String, String> pathParams;
     private Map<String, String> queryParams;
     private Connection connection;
+    private final int MAX_HEADER_SIZE = 16 * 1024;
 
     public Request(Socket socket, Connection connection) {
         this.socket = socket;
@@ -37,12 +38,11 @@ public class Request implements Runnable {
 
     @Override
     public void run() {
-        try (BufferedInputStream inputStream = new BufferedInputStream(socket.getInputStream());
+        try (BufferedInputStream inputStream = new BufferedInputStream(socket.getInputStream(), MAX_HEADER_SIZE);
              OutputStream outputStream = socket.getOutputStream()) {
 
-            int maxHeaderSize = 16 * 1024;  // MAX SUPPORTED HEADER SIZE
-            byte[] buffer = new byte[maxHeaderSize];
-            inputStream.mark(maxHeaderSize);
+            byte[] buffer = new byte[MAX_HEADER_SIZE];
+            inputStream.mark(MAX_HEADER_SIZE);
 
             inputStream.read(buffer);
             int index = new String(buffer).indexOf("\r\n\r\n");
@@ -82,7 +82,7 @@ public class Request implements Runnable {
         int queryParamsStart = methodLine[1].indexOf('?');
 
         if (pathParamsStart < 0 && queryParamsStart < 0) {
-            path = URLDecoder.decode(methodLine[1].substring(1), "UTF-8");
+            path = URLDecoder.decode(methodLine[1], "UTF-8");
         } else if (pathParamsStart >= 0 && queryParamsStart < 0) {
             path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
             pathParams = getPathParams(methodLine[1].substring(pathParamsStart));

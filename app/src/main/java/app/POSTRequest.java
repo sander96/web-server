@@ -27,9 +27,9 @@ public class POSTRequest implements ResponseHandler {
         this.outputStream = outputStream;
         this.headers = headers;
 
-        if (path.equals("login.html")) {
+        if (path.equals("/login.html")) {
             login();
-        } else if (path.equals("register.html")) {
+        } else if (path.equals("/register.html")) {
             register();
         }
 

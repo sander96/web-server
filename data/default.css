@@ -1,0 +1,14 @@
+a:link, a:visited {
+    background-color: green;
+    color: white;
+    padding: 14px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: table;
+	width: 100px;
+}
+
+
+a:hover, a:active {
+    background-color: lawngreen;
+}
