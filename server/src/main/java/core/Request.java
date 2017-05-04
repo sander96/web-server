@@ -78,21 +78,21 @@ public class Request implements Runnable {
         method = Method.getMethod(methodLine[0]);
 
         // set path and parameters
-        int pathParamsStart = methodLine[1].indexOf(';');   // TODO ?
+        int pathParamsStart = methodLine[1].indexOf(';');
         int queryParamsStart = methodLine[1].indexOf('?');
 
         if (pathParamsStart < 0 && queryParamsStart < 0) {
             path = URLDecoder.decode(methodLine[1], "UTF-8");
         } else if (pathParamsStart >= 0 && queryParamsStart < 0) {
             path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
-            pathParams = getPathParams(methodLine[1].substring(pathParamsStart));
+            pathParams = getParams(methodLine[1].substring(pathParamsStart), ";");
         } else if (pathParamsStart < 0 && queryParamsStart >= 0) {
             path = URLDecoder.decode(methodLine[1].substring(1, queryParamsStart), "UTF-8");
-            queryParams = getQueryParams(methodLine[1].substring(queryParamsStart));
+            queryParams = getParams(methodLine[1].substring(queryParamsStart), "&");
         } else {
             path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
-            pathParams = getPathParams(methodLine[1].substring(pathParamsStart, queryParamsStart));
-            queryParams = getQueryParams(methodLine[1].substring(queryParamsStart));
+            pathParams = getParams(methodLine[1].substring(pathParamsStart, queryParamsStart), ";");
+            queryParams = getParams(methodLine[1].substring(queryParamsStart), "&");
         }
 
         // set protocol
@@ -115,13 +115,26 @@ public class Request implements Runnable {
         return handlers;
     }
 
-    private Map<String, String> getPathParams(String initial) {
-        // TODO method body
-        return null;
-    }
+    private Map<String, String> getParams(String data, String separator) throws UnsupportedEncodingException{
+        Map<String, String> params = new HashMap<>();
+        data = data.substring(1);
 
-    private Map<String, String> getQueryParams(String initial) {
-        // TODO method body
-        return null;
+        while (true) {
+            String key = data.substring(0, data.indexOf("="));
+            data = data.substring(data.indexOf("=")+1);
+
+            int separatorIndex = data.indexOf(separator);
+
+            if (separatorIndex == -1) {
+                params.put(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(data, "UTF-8"));
+                break;
+            } else {
+                String value = data.substring(0, separatorIndex);
+                data = data.substring(data.indexOf("&")+1);
+
+                params.put(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(value, "UTF-8"));
+            }
+        }
+        return params;
     }
 }
