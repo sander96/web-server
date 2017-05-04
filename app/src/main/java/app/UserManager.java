@@ -2,12 +2,16 @@ package app;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.security.SecureRandom;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Date;
 
 public class UserManager {
     private Connection connection;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final String CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static final int COOKIE_LENGTH = 128;
 
     public UserManager(Connection connection) {
         this.connection = connection;
@@ -59,14 +63,15 @@ public class UserManager {
         return true;
     }
 
-    public String createCookie(String username) throws SQLException {  // TODO hash cookie
+    public String createCookie(String username) throws SQLException {
         PreparedStatement addCookie = connection.prepareStatement("UPDATE user SET cookie = ?, cookie_expiration = ? WHERE username = ?");
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.HOUR_OF_DAY, 1);
 
-        String cookie = username; // TEMPORARY
+        String cookie = hashCookie();
+        System.out.println(cookie);
 
         addCookie.setString(1, cookie);
         addCookie.setLong(2, calendar.getTimeInMillis());
@@ -126,5 +131,15 @@ public class UserManager {
 
     private boolean validatePassword(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+
+    private String hashCookie(){
+        StringBuilder random = new StringBuilder(COOKIE_LENGTH);
+
+        for(int i = 0; i < COOKIE_LENGTH; ++i){
+            random.append(CHARS.charAt(SECURE_RANDOM.nextInt(CHARS.length())));
+        }
+
+        return random.toString();
     }
 }
