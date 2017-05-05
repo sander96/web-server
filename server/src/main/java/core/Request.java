@@ -9,8 +9,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -25,8 +23,8 @@ public class Request implements Runnable {
     private Method method;
     private String path;
     private String protocol;
-    private Map<String, String> pathParams;
-    private Map<String, String> queryParams;
+    private Map<String, String> pathParams = new HashMap<>();
+    private Map<String, String> queryParams = new HashMap<>();
     private Connection connection;
     private final int MAX_HEADER_SIZE = 16 * 1024;
 
@@ -49,6 +47,8 @@ public class Request implements Runnable {
 
             if (index == -1) {
                 throw new RuntimeException("Header size too large or no delimiter?");
+            } else {
+                index += 4;
             }
 
             String headerData = new String(buffer, 0, index, "UTF-8");
@@ -66,7 +66,7 @@ public class Request implements Runnable {
 
             handlerMap.get(method).sendResponse(headers, method, path, protocol, pathParams, queryParams, inputStream, outputStream, connection);
         } catch (IOException | SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -84,13 +84,13 @@ public class Request implements Runnable {
         if (pathParamsStart < 0 && queryParamsStart < 0) {
             path = URLDecoder.decode(methodLine[1], "UTF-8");
         } else if (pathParamsStart >= 0 && queryParamsStart < 0) {
-            path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
+            path = URLDecoder.decode(methodLine[1].substring(0, pathParamsStart), "UTF-8");
             pathParams = getParams(methodLine[1].substring(pathParamsStart), ";");
         } else if (pathParamsStart < 0 && queryParamsStart >= 0) {
-            path = URLDecoder.decode(methodLine[1].substring(1, queryParamsStart), "UTF-8");
+            path = URLDecoder.decode(methodLine[1].substring(0, queryParamsStart), "UTF-8");
             queryParams = getParams(methodLine[1].substring(queryParamsStart), "&");
         } else {
-            path = URLDecoder.decode(methodLine[1].substring(1, pathParamsStart), "UTF-8");
+            path = URLDecoder.decode(methodLine[1].substring(0, pathParamsStart), "UTF-8");
             pathParams = getParams(methodLine[1].substring(pathParamsStart, queryParamsStart), ";");
             queryParams = getParams(methodLine[1].substring(queryParamsStart), "&");
         }
@@ -115,13 +115,13 @@ public class Request implements Runnable {
         return handlers;
     }
 
-    private Map<String, String> getParams(String data, String separator) throws UnsupportedEncodingException{
+    private Map<String, String> getParams(String data, String separator) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
         data = data.substring(1);
 
         while (true) {
             String key = data.substring(0, data.indexOf("="));
-            data = data.substring(data.indexOf("=")+1);
+            data = data.substring(data.indexOf("=") + 1);
 
             int separatorIndex = data.indexOf(separator);
 
@@ -130,7 +130,7 @@ public class Request implements Runnable {
                 break;
             } else {
                 String value = data.substring(0, separatorIndex);
-                data = data.substring(data.indexOf("&")+1);
+                data = data.substring(data.indexOf("&") + 1);
 
                 params.put(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(value, "UTF-8"));
             }

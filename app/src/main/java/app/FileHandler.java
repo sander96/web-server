@@ -1,5 +1,6 @@
 package app;
 
+import org.apache.commons.io.FileUtils;
 import serverexception.AccessRestrictedException;
 
 import java.io.*;
@@ -66,9 +67,14 @@ public class FileHandler {  // TODO better synchronization
         }
     }
 
-    public static synchronized void deleteFile(String path) throws Exception {
-        File file = new File(path.substring(1));
-        file.delete();
+    public static synchronized void deleteFile(String path) throws IOException {
+        File file = new File("data" + path);
+
+        if (file.isDirectory()) {
+            FileUtils.deleteDirectory(file);
+        } else {
+            file.delete();
+        }
     }
 
     public static void checkServerDirectory(File file) throws FileNotFoundException, AccessRestrictedException {
@@ -80,7 +86,7 @@ public class FileHandler {  // TODO better synchronization
             throw new AccessRestrictedException();
         }
 
-        if(!file.toString().substring(0, 4).equals("data")){
+        if (!file.toString().substring(0, 4).equals("data")) {
             throw new RuntimeException();
         }
     }

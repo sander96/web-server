@@ -13,14 +13,20 @@ import java.util.Date;
 public class DynamicPage {
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
 
-    public String createFilePage(String folderPath, boolean isUser) throws IOException, AccessRestrictedException {
+    public String createFilePage(String folderPath, boolean isUser, boolean checkboxes) throws IOException, AccessRestrictedException {
         File fileHandle = new File(folderPath);
         FileHandler.checkServerDirectory(fileHandle);
 
         String htmlPage = new String(Files.readAllBytes(Paths.get("data/template.html")));
 
         StringBuilder body = new StringBuilder();
-        body.append("<h1>" + folderPath.substring(4) + "</h1><hr><pre><a href=\"../\">../</a>\n");
+        body.append("<h1>" + folderPath.substring(4) + "</h1>");
+
+        if (checkboxes) {
+            body.append("<form method=\"post\">");
+        }
+
+        body.append("<hr><pre><a href=\"../\">../</a>\n");
 
         for (String filename : fileHandle.list()) {
             String slash = "";
@@ -40,15 +46,29 @@ public class DynamicPage {
                 fileSize = fileSize.replace("0", "-");
             }
 
-            String str = "<a href=" + "\"" + filename + slash + "\"" + ">" + filename + slash + "</a>" +
-                    dateString + date + fileSize + "\n";
+            String str = "<div><a href=" + "\"" + filename + slash + "\"" + ">" + filename + slash + "</a>" +
+                    dateString + date + fileSize;
             body.append(str);
+
+            if (checkboxes) {
+                body.append("<input type=\"checkbox\" name=\"" + filename + "\">");
+            }
+
+            body.append("</div>");
         }
 
-        body.append("</pre><hr><div><form method=\"post\" enctype=\"multipart/form-data\">" +
-                "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form></div>");
+        body.append("</pre><hr>");
 
-        if (isUser) {
+        if (checkboxes) {
+            body.append("<input type=\"submit\" value=\"Delete files\"></form>");
+        }
+
+        if (isUser && !checkboxes) {
+            body.append("<div><form method=\"post\" enctype=\"multipart/form-data\">" +
+                    "<input type=\"submit\" value=\"Upload file\"><input type=\"file\" name=\"filename\"></form></div>");
+        }
+
+        if (isUser && !checkboxes) {
             body.append("<div><form method=\"get\"><input type=\"submit\" name=\"checkbox-delete\" value=\"Delete files\"></form></div>");
         }
 

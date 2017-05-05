@@ -7,7 +7,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -31,8 +30,9 @@ public class POSTRequest implements ResponseHandler {
             login();
         } else if (path.equals("/register.html")) {
             register();
+        } else if (queryParams.get("checkbox-delete") != null && queryParams.get("checkbox-delete").equals("Delete files")) {
+            deleteFiles(path);
         }
-
     }
 
     @Override
@@ -123,5 +123,33 @@ public class POSTRequest implements ResponseHandler {
             outputStream.write(headerString.getBytes("UTF-8"));
             outputStream.write(page);
         }
+    }
+
+    private void deleteFiles(String path) throws IOException {
+        byte[] buffer = new byte[2048];
+        int size = 0;
+        int maxSize = Integer.parseInt(headers.get("Content-Length"));
+        StringBuilder data = new StringBuilder();
+
+        while (maxSize > 0) {
+            size = inputStream.read(buffer);
+            maxSize -= size;
+
+            if (size == -1) {
+                break;
+            }
+
+            data.append(new String(buffer, 0, size, "UTF-8"));
+        }
+
+        String[] splitData = data.toString().split("&");
+
+        for (String str : splitData) {
+            String filename = URLDecoder.decode(str.replace("=on", ""), "UTF-8");
+            FileHandler.deleteFile(path + filename);
+        }
+
+        String headerString = "HTTP/1.1 302 Found\r\n" + "Location: " + path + "\r\n\r\n";
+        outputStream.write(headerString.getBytes("UTF-8"));
     }
 }

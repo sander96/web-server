@@ -1,6 +1,5 @@
 package app;
 
-
 import core.*;
 import serverexception.AccessRestrictedException;
 
@@ -57,8 +56,17 @@ public class GETRequest implements ResponseHandler {
                 outputStream.write(responseHeaders.getBytes());
             } else {
                 path = "data" + path;
-                if (new File(path).isDirectory()) {
-                    byte[] page = new DynamicPage().createFilePage(path, cookie != null).getBytes("UTF-8");
+                File file = new File(path);
+                FileHandler.checkServerDirectory(file);
+
+                boolean checkboxes = false;
+
+                if (queryParams.get("checkbox-delete") != null && queryParams.get("checkbox-delete").equals("Delete files")) {
+                    checkboxes = true;
+                }
+
+                if (file.isDirectory()) {
+                    byte[] page = new DynamicPage().createFilePage(path, cookie != null, checkboxes).getBytes("UTF-8");
                     int pageLength = page.length;
 
                     String responseHeaders = "HTTP/1.1 200 OK\r\n" +
@@ -68,7 +76,6 @@ public class GETRequest implements ResponseHandler {
                     outputStream.write(responseHeaders.getBytes());
                     outputStream.write(page);
                 } else {
-                    FileHandler.checkServerDirectory(new File(path));
                     FileHandler.sendFile(path, outputStream);
                 }
             }
