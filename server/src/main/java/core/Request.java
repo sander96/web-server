@@ -18,15 +18,15 @@ import java.util.ServiceLoader;
 public class Request implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger(Request.class);
     private Socket socket;
+    private ByteList byteList = new ByteList();
     private Map<String, String> headers = new HashMap<>();
-    private Map<Method, ResponseHandler> handlerMap;
-    private Method method;
-    private String path;
-    private String protocol;
     private Map<String, String> pathParams = new HashMap<>();
     private Map<String, String> queryParams = new HashMap<>();
+    private Map<Method, ResponseHandler> handlerMap;
     private Connection connection;
-    private final int MAX_HEADER_SIZE = 16 * 1024;
+    private Method method;
+    private String protocol;
+    private String path;
 
     public Request(Socket socket, Connection connection) {
         this.socket = socket;
@@ -36,38 +36,62 @@ public class Request implements Runnable {
 
     @Override
     public void run() {
-        try (BufferedInputStream inputStream = new BufferedInputStream(socket.getInputStream(), MAX_HEADER_SIZE);
+        try (SocketInputstream inputStream = new SocketInputstream(new BufferedInputStream(socket.getInputStream()));
              OutputStream outputStream = socket.getOutputStream()) {
 
-            byte[] buffer = new byte[MAX_HEADER_SIZE];
-            inputStream.mark(MAX_HEADER_SIZE);
+            byte[] buffer = new byte[1024];
+            int bytesRead;
 
-            inputStream.read(buffer);
-            int index = new String(buffer).indexOf("\r\n\r\n");
+            while (true) {
+                bytesRead = inputStream.read(buffer);
+                if (bytesRead == -1) break;
 
-            if (index == -1) {
-                throw new RuntimeException("Header size too large or no delimiter?");
-            } else {
-                index += 4;
+                byteList.add(buffer, 0, bytesRead);
             }
 
-            String headerData = new String(buffer, 0, index, "UTF-8");
-            inputStream.reset();
-
-            do {
-                long skippedBytes = inputStream.skip(index);
-                index -= skippedBytes;
-            } while (index != 0);
-
+            String headerData = new String(byteList.getList());
             analyze(headerData);
+            inputStream.specifyContentLength(headers.get("Content-Length"));
 
+            // TODO delete when development is finished
             System.out.println(headerData);
-            System.out.println();
 
-            handlerMap.get(method).sendResponse(headers, method, path, protocol, pathParams, queryParams, inputStream, outputStream, connection);
+            handlerMap.get(method).sendResponse(this, inputStream, outputStream);
         } catch (IOException | SQLException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public Map<String, String> getPathParams() {
+        return pathParams;
+    }
+
+    public Map<String, String> getQueryParams() {
+        return queryParams;
+    }
+
+    public Map<Method, ResponseHandler> getHandlerMap() {
+        return handlerMap;
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 
     private void analyze(String headData) throws UnsupportedEncodingException {
@@ -100,8 +124,13 @@ public class Request implements Runnable {
 
         // set headers
         for (int i = 1; i < lines.length; i++) {
-            String[] tmp = lines[i].split(":");
-            if (tmp[1].charAt(0) == ' ') tmp[1] = tmp[1].substring(1);
+            String[] tmp = new String[2];
+            int sep = lines[i].indexOf(":");
+
+            if (sep < 0) continue;
+
+            tmp[0] = lines[i].substring(0, sep).trim();
+            tmp[1] = lines[i].substring(sep+1).trim();
             headers.put(tmp[0], tmp[1]);
         }
     }

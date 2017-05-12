@@ -2,16 +2,25 @@ package core;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public class ResponseHead {
 
-    public void sendResponseHead(OutputStream outputStream, String scheme, StatusCode statusCode,
-                                 Header[] headers) throws IOException {
-        String responseHead = scheme + statusCode.toString() + "\r\n";
-        for (Header header : headers) {
-            responseHead += header.toString();
+    public static void sendResponseHead(OutputStream outputStream, String scheme, StatusCode statusCode,
+                                 List<Header> headers) throws IOException {
+        StringBuilder responseHead = new StringBuilder();
+
+        responseHead.append(scheme);
+        responseHead.append(statusCode.toString());
+        responseHead.append("\r\n");
+
+        if (headers != null) {
+            for (Header header : headers) {
+                responseHead.append(header.toString());
+            }
         }
-        responseHead += "\r\n";
-        outputStream.write(responseHead.getBytes());
+        responseHead.append("\r\n");
+
+        outputStream.write(responseHead.toString().getBytes("UTF-8"));
     }
 }

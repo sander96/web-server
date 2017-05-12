@@ -6,11 +6,19 @@ import serverexception.AccessRestrictedException;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class GETRequest implements ResponseHandler {
-    public void sendResponse(Map<String, String> headers, Method method, String path, String scheme, Map<String, String> pathParams,
-                             Map<String, String> queryParams, BufferedInputStream inputStream, OutputStream outputStream, Connection connection) throws IOException, SQLException {
+    private static final String SCHEME = "HTTP/1.1";
+
+    public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
+        Map<String, String> headers = request.getHeaders();
+        Connection connection = request.getConnection();
+        String path = request.getPath();
+        Map<String, String> queryParams = request.getQueryParams();
+
         try {
             String cookie = headers.get("Cookie");
             UserManager userManager = new UserManager(connection);
@@ -23,31 +31,31 @@ public class GETRequest implements ResponseHandler {
                 byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie)).getBytes("UTF-8");
                 int pageLength = page.length;
 
-                String responseHeaders = "HTTP/1.1 200 OK\r\n" +
-                        "Content-Type: text/html\r\n" +
-                        "Content-Length: " + pageLength + "\r\n\r\n";
+                List<Header> headerList = new ArrayList<>();
+                headerList.add(new Header("Content-Type", "text/html"));
+                headerList.add(new Header("Content-Length", String.valueOf(pageLength)));
 
-                outputStream.write(responseHeaders.getBytes());
+                ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.OK, headerList);
                 outputStream.write(page);
             } else if (path.equals("/login.html")) {   // TODO refactor code
                 byte[] page = new DynamicPage().createLoginPage(false).getBytes("UTF-8");
                 int pageLength = page.length;
 
-                String responseHeaders = "HTTP/1.1 200 OK\r\n" +
-                        "Content-Type: text/html\r\n" +
-                        "Content-Length: " + pageLength + "\r\n\r\n";
+                List<Header> headerList = new ArrayList<>();
+                headerList.add(new Header("Content-Type", "text/html"));
+                headerList.add(new Header("Content-Length", String.valueOf(pageLength)));
 
-                outputStream.write(responseHeaders.getBytes());
+                ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.OK, headerList);
                 outputStream.write(page);
             } else if (path.equals("/register.html")) {
                 byte[] page = new DynamicPage().createRegisterPage(false).getBytes("UTF-8");
                 int pageLength = page.length;
 
-                String responseHeaders = "HTTP/1.1 200 OK\r\n" +
-                        "Content-Type: text/html\r\n" +
-                        "Content-Length: " + pageLength + "\r\n\r\n";
+                List<Header> headerList = new ArrayList<>();
+                headerList.add(new Header("Content-Type", "text/html"));
+                headerList.add(new Header("Content-Length", String.valueOf(pageLength)));
 
-                outputStream.write(responseHeaders.getBytes());
+                ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.OK, headerList);
                 outputStream.write(page);
             } else if (path.equals("/logout")) {
                 String responseHeaders = "HTTP/1.1 302 Found\r\nLocation: /\r\n" +
@@ -69,23 +77,24 @@ public class GETRequest implements ResponseHandler {
                     byte[] page = new DynamicPage().createFilePage(path, cookie != null, checkboxes).getBytes("UTF-8");
                     int pageLength = page.length;
 
-                    String responseHeaders = "HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: text/html\r\n" +
-                            "Content-Length: " + pageLength + "\r\n\r\n";
+                    List<Header> headerList = new ArrayList<>();
+                    headerList.add(new Header("Content-Type", "text/html"));
+                    headerList.add(new Header("Content-Length", String.valueOf(pageLength)));
 
-                    outputStream.write(responseHeaders.getBytes());
+                    ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.OK, headerList);
                     outputStream.write(page);
                 } else {
                     FileHandler.sendFile(path, outputStream);
                 }
             }
         } catch (FileNotFoundException e) {
-            outputStream.write("HTTP/1.1 404 File Not Found\r\n\r\n".getBytes());
+            ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.NOT_FOUND, null);
         } catch (AccessRestrictedException e) {
-            outputStream.write("HTTP/1.1 400 Bad Request\r\n\r\n".getBytes());
+            ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.BAD_REQUEST, null);
         }
     }
 
+    @Override
     public Method getKey() {
         return Method.GET;
     }
