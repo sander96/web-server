@@ -19,7 +19,6 @@ public class POSTRequest implements ResponseHandler {
 
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
-
         this.inputStream = inputStream;
         this.connection = request.getConnection();
         this.outputStream = outputStream;
@@ -27,13 +26,34 @@ public class POSTRequest implements ResponseHandler {
         String path = request.getPath();
         Map<String, String> queryParams = request.getQueryParams();
 
+        String cookie = headers.get("Cookie");
+        UserManager userManager = new UserManager(connection);
+
+        if (cookie != null && !userManager.checkCookie(cookie)) {
+            cookie = null;
+        }
+
         if (path.equals("/login.html")) {
             login();
         } else if (path.equals("/register.html")) {
             register();
         } else if (queryParams.get("checkbox-delete") != null && queryParams.get("checkbox-delete").equals("Delete files")) {
+            if (cookie == null) {
+                throw new RuntimeException();
+            }
+
             deleteFiles(path);
+        } else if (path.equals("/users.html")) {
+            if (!userManager.isAdmin(cookie)) {
+                throw new RuntimeException();
+            }
+
+            deleteUsers(userManager);
         } else {
+            if (cookie == null) {
+                throw new RuntimeException();
+            }
+
             byte[] buffer = new byte[1024];
             int numRead = inputStream.read(buffer);
 
@@ -51,7 +71,7 @@ public class POSTRequest implements ResponseHandler {
                     if (contentEnd == -1) {
                         fileWriter.write(buffer, 0, numRead);
                     } else {
-                        fileWriter.write(buffer, 0, contentEnd-2);
+                        fileWriter.write(buffer, 0, contentEnd - 2);
                         break;
                     }
 
@@ -182,7 +202,44 @@ public class POSTRequest implements ResponseHandler {
         outputStream.write(headerString.getBytes("UTF-8"));
     }
 
-    private byte[] getMetaData(byte[] b, int length) throws IOException{
+    private void deleteUsers(UserManager userManager) throws IOException, SQLException {
+        byte[] buffer = new byte[2048];
+        int size = 0;
+        int maxSize = Integer.parseInt(headers.get("Content-Length"));
+        StringBuilder data = new StringBuilder();
+
+        while (maxSize > 0) {
+            size = inputStream.read(buffer);
+            maxSize -= size;
+
+            if (size == -1) {
+                break;
+            }
+
+            data.append(new String(buffer, 0, size, "UTF-8"));
+        }
+
+        String[] splitData = data.toString().split("&");
+        Map<String, Boolean> users = userManager.getUsernames();
+
+        for (String username : splitData) {
+            String user = URLDecoder.decode(username.split("=")[0], "UTF-8");
+
+            if (!users.get(user)) {
+                userManager.deleteUser(user);
+            }
+        }
+
+        byte[] page = new DynamicPage().createUsersPage(true, userManager.getUsernames()).getBytes("UTF-8");
+
+        String headerString = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" +
+                "Content-Length: " + page.length + "\r\n\r\n";
+
+        outputStream.write(headerString.getBytes("UTF-8"));
+        outputStream.write(page);
+    }
+
+    private byte[] getMetaData(byte[] b, int length) throws IOException {
         byte[] delimiter = new byte[4];
 
         for (int i = 0; i < length; i++) {
@@ -192,9 +249,9 @@ public class POSTRequest implements ResponseHandler {
             delimiter[3] = b[i];
 
             if (delimiter[0] == '\r' && delimiter[1] == '\n' && delimiter[2] == '\r' && delimiter[3] == '\n') {
-                byte[] metaData = new byte[i+1];
-                System.arraycopy(b, 0, metaData, 0, i+1);
-                System.arraycopy(b, i+1, b, 0, length-i-1);
+                byte[] metaData = new byte[i + 1];
+                System.arraycopy(b, 0, metaData, 0, i + 1);
+                System.arraycopy(b, i + 1, b, 0, length - i - 1);
                 return metaData;
             }
         }
@@ -205,12 +262,11 @@ public class POSTRequest implements ResponseHandler {
         String data = new String(metaData);
         int start = data.indexOf("filename=") + "filename=".length();
 
-        data = data.substring(start+1);
+        data = data.substring(start + 1);
         int end = data.indexOf("\r");
 
         return data.substring(0, end).replace("\"", "");
     }
-
 
 
     private byte[] getBoundary(byte[] metaData) {
@@ -226,9 +282,9 @@ public class POSTRequest implements ResponseHandler {
 
     private int getContentEnd(byte[] buffer, byte[] boundary) {
         Outerloop:
-        for (int i = 0; i < buffer.length-boundary.length; i++) {
+        for (int i = 0; i < buffer.length - boundary.length; i++) {
             for (int j = 0; j < boundary.length; j++) {
-                if (buffer[i+j] != boundary[j]) continue Outerloop;
+                if (buffer[i + j] != boundary[j]) continue Outerloop;
             }
             return i;
         }

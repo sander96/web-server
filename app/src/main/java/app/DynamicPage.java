@@ -8,7 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 
 public class DynamicPage {
     private static final Logger logger = LogManager.getLogger(DynamicPage.class);
@@ -75,11 +78,15 @@ public class DynamicPage {
         return htmlPage.replace("#body#", body).replace("#title#", folderPath.substring(4));
     }
 
-    public String createIndexPage(String cookie, String username) throws IOException {
+    public String createIndexPage(String cookie, String username, boolean admin) throws IOException {
         String htmlPage = new String(Files.readAllBytes(Paths.get("data/index-template.html")));
 
         StringBuilder body = new StringBuilder();
         body.append("<a href=files/>Files</a>");
+
+        if (admin) {
+            body.append("<br><a href=users.html>Users</a>");
+        }
 
         if (cookie == null) {
             body.append("<br><a href=login.html>Log in</a>");
@@ -116,5 +123,35 @@ public class DynamicPage {
 
         return htmlPage.replace("#title#", "Register")
                 .replace("#button#", "Register").replace("#paragraph#", message);
+    }
+
+    public String createUsersPage(boolean isAdmin, Map<String, Boolean> usernames) throws IOException {
+        if (!isAdmin) {
+            throw new RuntimeException();
+        }
+
+        String htmlPage = new String(Files.readAllBytes(Paths.get("data/index-template.html")));
+        StringBuilder body = new StringBuilder();
+        body.append("<form method=\"post\"><pre>");
+
+        ArrayList<String> sortedUsernames = new ArrayList<>(usernames.keySet());
+        Collections.sort(sortedUsernames);
+
+        for (String username : sortedUsernames) {
+            body.append("<div>" + String.format("%-20s", username));
+
+            if (usernames.get(username)) {
+                body.append("<input type=\"checkbox\" disabled>");
+            } else {
+                body.append("<input type=\"checkbox\" name=\"" + username + "\">");
+
+            }
+
+            body.append("</div>");
+        }
+
+        body.append("</pre><input type=\"submit\" value=\"Delete selected users\"></form>");
+
+        return htmlPage.replace("#body#", body).replace("#title#", "Users");
     }
 }

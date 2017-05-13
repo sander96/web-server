@@ -28,7 +28,7 @@ public class GETRequest implements ResponseHandler {
             }
 
             if (path.equals("/")) {
-                byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie)).getBytes("UTF-8");
+                byte[] page = new DynamicPage().createIndexPage(cookie, userManager.getUsername(cookie), userManager.isAdmin(cookie)).getBytes("UTF-8");
                 int pageLength = page.length;
 
                 List<Header> headerList = new ArrayList<>();
@@ -49,6 +49,16 @@ public class GETRequest implements ResponseHandler {
                 outputStream.write(page);
             } else if (path.equals("/register.html")) {
                 byte[] page = new DynamicPage().createRegisterPage(false).getBytes("UTF-8");
+                int pageLength = page.length;
+
+                List<Header> headerList = new ArrayList<>();
+                headerList.add(new Header("Content-Type", "text/html"));
+                headerList.add(new Header("Content-Length", String.valueOf(pageLength)));
+
+                ResponseHead.sendResponseHead(outputStream, SCHEME, StatusCode.OK, headerList);
+                outputStream.write(page);
+            } else if (path.equals("/users.html")) {
+                byte[] page = new DynamicPage().createUsersPage(userManager.isAdmin(cookie), userManager.getUsernames()).getBytes("UTF-8");
                 int pageLength = page.length;
 
                 List<Header> headerList = new ArrayList<>();
