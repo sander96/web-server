@@ -22,10 +22,10 @@ public class Request implements Runnable {
     private Map<String, String> headers = new HashMap<>();
     private Map<String, String> pathParams = new HashMap<>();
     private Map<String, String> queryParams = new HashMap<>();
-    private Map<Method, ResponseHandler> handlerMap;
+    private Map<String, ResponseHandler> handlerMap;
     private Connection connection;
     private Method method;
-    private String protocol;
+    private String scheme;
     private String path;
 
     public Request(Socket socket, Connection connection) {
@@ -56,7 +56,13 @@ public class Request implements Runnable {
             // TODO delete when development is finished
             System.out.println(headerData);
 
-            handlerMap.get(method).sendResponse(this, inputStream, outputStream);
+            //handlerMap.get(method).sendResponse(this, inputStream, outputStream);
+            ResponseHandler handler = getHandler(path);
+            if (handler == null) {
+                ResponseHead.sendResponseHead(outputStream, getScheme(), StatusCode.NOT_FOUND, null);
+            } else {
+                handler.sendResponse(this, inputStream, outputStream);
+            }
         } catch (IOException | SQLException e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -74,8 +80,8 @@ public class Request implements Runnable {
         return path;
     }
 
-    public String getProtocol() {
-        return protocol;
+    public String getScheme() {
+        return scheme;
     }
 
     public Map<String, String> getPathParams() {
@@ -86,7 +92,7 @@ public class Request implements Runnable {
         return queryParams;
     }
 
-    public Map<Method, ResponseHandler> getHandlerMap() {
+    public Map<String, ResponseHandler> getHandlerMap() {
         return handlerMap;
     }
 
@@ -119,8 +125,8 @@ public class Request implements Runnable {
             queryParams = getParams(methodLine[1].substring(queryParamsStart), "&");
         }
 
-        // set protocol
-        protocol = methodLine[2];
+        // set scheme
+        scheme = methodLine[2];
 
         // set headers
         for (int i = 1; i < lines.length; i++) {
@@ -135,8 +141,17 @@ public class Request implements Runnable {
         }
     }
 
-    private Map<Method, ResponseHandler> loadHandlers() {
+    /*private Map<Method, ResponseHandler> loadHandlers() {
         Map<Method, ResponseHandler> handlers = new HashMap<>();
+
+        for (ResponseHandler handler : ServiceLoader.load(ResponseHandler.class)) {
+            handlers.put(handler.getKey(), handler);
+        }
+        return handlers;
+    }*/
+
+    private Map<String, ResponseHandler> loadHandlers() {
+        Map<String, ResponseHandler> handlers = new HashMap<>();
 
         for (ResponseHandler handler : ServiceLoader.load(ResponseHandler.class)) {
             handlers.put(handler.getKey(), handler);
@@ -165,5 +180,29 @@ public class Request implements Runnable {
             }
         }
         return params;
+    }
+
+    private ResponseHandler getHandler(String path) {
+        String currentPath = path;
+        ResponseHandler handler = handlerMap.get(currentPath);
+        if (handler != null) {
+            return handler;
+        }
+
+        while (true) {
+            if (currentPath.endsWith("/")) {
+                handler = handlerMap.get(currentPath + "*");
+
+                if (handler != null) {
+                    return handler;
+                }
+                currentPath = currentPath.substring(0, currentPath.lastIndexOf("/"));
+            }
+
+            if (currentPath.length() == 0) break;
+            currentPath = currentPath.substring(0, currentPath.lastIndexOf("/")+1);
+        }
+
+        return null;
     }
 }

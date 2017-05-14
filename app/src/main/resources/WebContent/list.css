@@ -1,0 +1,16 @@
+a {
+    text-decoration: none;
+}
+
+ul  {
+    list-style: none;
+}
+
+table {
+    width: 100%;
+    border-top: 1px solid black;
+}
+
+th {
+    text-align: left;
+}

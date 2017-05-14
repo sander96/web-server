@@ -11,6 +11,7 @@ public class ResponseHead {
         StringBuilder responseHead = new StringBuilder();
 
         responseHead.append(scheme);
+        responseHead.append(" ");
         responseHead.append(statusCode.toString());
         responseHead.append("\r\n");
 

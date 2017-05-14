@@ -1,2 +1,5 @@
-app.GETRequest
-app.POSTRequest
+app.SimpleHandler
+app.StyleSheetHandler
+app.MainPageHandler
+app.LoginHandler
+app.RegisterHandler
