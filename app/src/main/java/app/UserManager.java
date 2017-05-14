@@ -4,7 +4,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.SecureRandom;
 import java.sql.*;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
 
 public class UserManager {
@@ -69,9 +69,7 @@ public class UserManager {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.HOUR_OF_DAY, 1);
-
         String cookie = hashCookie();
-        System.out.println(cookie);
 
         addCookie.setString(1, cookie);
         addCookie.setLong(2, calendar.getTimeInMillis());
@@ -125,6 +123,45 @@ public class UserManager {
         return username;
     }
 
+    public boolean isAdmin(String cookie) throws SQLException {
+        if (cookie == null) {
+            return false;
+        }
+
+        cookie = cookie.replace("id=", "");
+
+        PreparedStatement retrievePermission = connection.prepareStatement("SELECT permission FROM user WHERE cookie = ?");
+        retrievePermission.setString(1, cookie);
+        ResultSet result = retrievePermission.executeQuery();
+
+        boolean permission = false;
+
+        if (result.next()) {
+            permission = result.getBoolean(1);
+        }
+
+        return permission;
+    }
+
+    public Map<String, Boolean> getUsernames() throws SQLException {
+        Map<String, Boolean> usernames = new HashMap<>();
+
+        PreparedStatement retrieveUsernames = connection.prepareStatement("SELECT username, permission FROM user");
+        ResultSet result = retrieveUsernames.executeQuery();
+
+        while (result.next()) {
+            usernames.put(result.getString(1), result.getBoolean(2));
+        }
+
+        return usernames;
+    }
+
+    public void deleteUser(String username) throws SQLException {
+        PreparedStatement deleteStatement = connection.prepareStatement("DELETE FROM user WHERE username = ?");
+        deleteStatement.setString(1, username);
+        deleteStatement.execute();
+    }
+
     private String hash(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt(12));
     }
@@ -133,10 +170,10 @@ public class UserManager {
         return BCrypt.checkpw(plainPassword, hashedPassword);
     }
 
-    private String hashCookie(){
+    private String hashCookie() {
         StringBuilder random = new StringBuilder(COOKIE_LENGTH);
 
-        for(int i = 0; i < COOKIE_LENGTH; ++i){
+        for (int i = 0; i < COOKIE_LENGTH; ++i) {
             random.append(CHARS.charAt(SECURE_RANDOM.nextInt(CHARS.length())));
         }
 
