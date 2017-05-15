@@ -4,64 +4,51 @@ package app;
 import core.*;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class SimpleHandler implements ResponseHandler{
+public class FileListHandler implements ResponseHandler{
 
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
-        boolean isUser = isUser(request);
-
-        if (request.getMethod() == Method.POST && isUser) {
-            uploadFile(request, inputStream);
-        }
-
         File file = new File(Paths.get("data", request.getPath()).toUri());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
         if (file.isDirectory()) {
             List<Header> headerList = new ArrayList<>();
-            String responsePage = loadTemplate();
-            String[] fileList = file.list();
-            String htmlList = "<td><a href=\"../\">../</a></td>";
+            String responsePage;
+            String htmlList;
 
-            if (fileList != null) {
-                for (String s : fileList) {
-                    String slash = "";
-                    File folderContent = new File(Paths.get("data", request.getPath(), s).toUri());
-                    if (folderContent.isDirectory()) {
-                        slash = "/";
+            if (isUser(request)) {
+                if (request.getMethod() == Method.POST){
+                    if (request.getQueryParams().get("delete") != null &&
+                            request.getQueryParams().get("delete").equals("Delete Files")) {
+
+                        delete(request, inputStream);
+                        headerList.add(new Header("Location", request.getPath()));
+                        ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.FOUND, headerList);
+                        return;
                     }
-
-                    StringBuilder tmp1 = new StringBuilder();
-                    tmp1.append("<tr>\n");
-
-                    // link and filename
-                    tmp1.append("<td>");
-                    tmp1.append("<a href=\"").append(request.getPath()).append(s)
-                            .append(slash).append("\">").append(s).append("</a> ");
-                    tmp1.append("</td>\n");
-
-                    // last modified
-                    tmp1.append("<td>");
-                    Date date = new Date(folderContent.lastModified());
-                    tmp1.append(dateFormat.format(date));
-                    tmp1.append("</td>\n");
-
-                    // file size
-                    tmp1.append("<td>");
-                    if (folderContent.isDirectory()) tmp1.append("-");
-                    else tmp1.append(folderContent.length());
-                    tmp1.append("</td>\n");
-
-                    tmp1.append("</tr>\n");
-                    htmlList += tmp1;
+                    uploadFile(request, inputStream);
                 }
+                if (request.getQueryParams().get("delete") != null &&
+                        request.getQueryParams().get("delete").equals("Delete Files")) {
+
+                    responsePage = loadTemplate("list-template-delete.html");
+                    htmlList = generateList(file, true, request);
+                } else {
+                    responsePage = loadTemplate("list-template-user-normal.html");
+                    htmlList = generateList(file, false, request);
+                }
+            } else {
+                responsePage = loadTemplate("list-template-guest.html");
+                htmlList = generateList(file, false, request);
             }
 
             responsePage = responsePage.replace("#title#", request.getPath());
@@ -73,6 +60,7 @@ public class SimpleHandler implements ResponseHandler{
             ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.OK, headerList);
 
             outputStream.write(response);
+
         } else if (file.isFile()) {
             List<Header> headerList = new ArrayList<>();
             headerList.add(new Header("Content-Type", "multipart/form-data"));
@@ -101,12 +89,79 @@ public class SimpleHandler implements ResponseHandler{
         return "/files/*";
     }
 
-    private String loadTemplate() throws IOException{
+    private void delete(Request request, SocketInputstream inputStream) throws IOException{
+        StringBuilder sb = new StringBuilder();
+        byte[] buffer = new byte[1024];
+
+        while (true) {
+            int numRead = inputStream.read(buffer);
+            if (numRead == -1) break;
+
+            sb.append(new String(buffer, 0, numRead, "UTF-8"));
+        }
+
+        String[] fileList = sb.toString().split("&");
+        for (String fileName : fileList) {
+            fileName = URLDecoder.decode(fileName.split("=")[0], "UTF-8");
+            File file = new File(Paths.get("data", request.getPath(), fileName).toUri());
+            file.delete();
+        }
+    }
+
+    private String generateList(File parentFolder, boolean checkbox, Request request) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        String[] fileList = parentFolder.list();
+        String htmlList = "";
+
+        if (fileList != null) {
+            for (String s : fileList) {
+                String slash = "";
+                File folderContent = new File(Paths.get("data", request.getPath(), s).toUri());
+                if (folderContent.isDirectory()) {
+                    slash = "/";
+                }
+
+                StringBuilder tmp1 = new StringBuilder();
+                tmp1.append("<tr>\n");
+
+                // link and filename
+                tmp1.append("<td>");
+                tmp1.append("<a href=\"").append(request.getPath()).append(s)
+                        .append(slash).append("\">").append(s).append("</a> ");
+                tmp1.append("</td>\n");
+
+                // last modified
+                tmp1.append("<td>");
+                Date date = new Date(folderContent.lastModified());
+                tmp1.append(dateFormat.format(date));
+                tmp1.append("</td>\n");
+
+                // file size
+                tmp1.append("<td>");
+                if (folderContent.isDirectory()) tmp1.append("-");
+                else tmp1.append(folderContent.length());
+                tmp1.append("</td>\n");
+
+                // checkbox
+                if (checkbox && !folderContent.isDirectory()) {
+                    tmp1.append("<td>");
+                    tmp1.append("<input type=\"checkbox\" ").append("name=\"").append(s).append("\">");
+                    tmp1.append("</td>\n");
+                }
+
+                tmp1.append("</tr>\n");
+                htmlList += tmp1;
+            }
+        }
+        return htmlList;
+    }
+
+    private String loadTemplate(String filename) throws IOException{
         byte[] buffer = new byte[1024];
         StringBuilder builder = new StringBuilder();
 
         try (InputStream fileInputStream = getClass().getClassLoader()
-                .getResourceAsStream("WebContent\\list-template.html")) {
+                .getResourceAsStream("WebContent\\" + filename)) {
 
             while (true) {
                 int bytesRead = fileInputStream.read(buffer);
@@ -119,8 +174,12 @@ public class SimpleHandler implements ResponseHandler{
         return builder.toString();
     }
 
-    private boolean isUser(Request request) {
-        return request.getHeaders().get("Cookie") != null;
+    private boolean isUser(Request request) throws SQLException{
+        String url = "jdbc:h2:./data/database/database";
+        try (Connection connection = DriverManager.getConnection(url)) {
+            UserManager userManager = new UserManager(connection);
+            return userManager.checkCookie(request.getHeaders().get("Cookie"));
+        }
     }
 
     private void uploadFile(Request request, SocketInputstream inputStream) throws IOException{

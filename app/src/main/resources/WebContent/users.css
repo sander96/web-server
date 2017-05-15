@@ -1,11 +1,11 @@
-a {
-    text-decoration: none;
+body {
+    font-family: monospace;
 }
 
 table {
     margin-bottom: 30px;
     border-collapse: collapse;
-    width: 100%;
+    width: 25%;
 }
 
 td, th {
@@ -16,8 +16,4 @@ td, th {
 
 tr:nth-child(even) {
     background-color: #dddddd;
-}
-
-body {
-    font-family: monospace;
 }

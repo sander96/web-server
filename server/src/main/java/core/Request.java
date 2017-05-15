@@ -23,15 +23,13 @@ public class Request implements Runnable {
     private Map<String, String> pathParams = new HashMap<>();
     private Map<String, String> queryParams = new HashMap<>();
     private Map<String, ResponseHandler> handlerMap;
-    private Connection connection;
     private Method method;
     private String scheme;
     private String path;
 
-    public Request(Socket socket, Connection connection) {
+    public Request(Socket socket) {
         this.socket = socket;
         this.handlerMap = loadHandlers();
-        this.connection = connection;
     }
 
     @Override
@@ -94,10 +92,6 @@ public class Request implements Runnable {
 
     public Map<String, ResponseHandler> getHandlerMap() {
         return handlerMap;
-    }
-
-    public Connection getConnection() {
-        return connection;
     }
 
     private void analyze(String headData) throws UnsupportedEncodingException {

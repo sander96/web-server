@@ -13,11 +13,18 @@ public class StyleSheetHandler implements ResponseHandler{
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
         String fileName = request.getPath().substring(request.getPath().lastIndexOf("/")+1);
-        byte[] styleSheet = getStyleSheet(fileName).getBytes();
 
+        String page = getStyleSheet(fileName);
+        if (page == null) {
+            ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.NOT_FOUND, null);
+            return;
+        }
+
+        byte[] styleSheet = page.getBytes();
         List<Header> headers = new ArrayList<>();
         headers.add(new Header("Content-Type", "text/css"));
         headers.add(new Header("Content-Length", String.valueOf(styleSheet.length)));
+
         ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.OK, headers);
         outputStream.write(styleSheet);
     }
@@ -32,6 +39,10 @@ public class StyleSheetHandler implements ResponseHandler{
         try (InputStream fileInputStream = getClass().getClassLoader()
                 .getResourceAsStream("WebContent\\" + fileName)) {
             byte[] buffer = new byte[1024];
+
+            if (fileInputStream == null) {
+                return null;
+            }
 
             while (true) {
                 int numRead = fileInputStream.read(buffer);

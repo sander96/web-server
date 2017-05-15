@@ -1,5 +1,7 @@
-app.SimpleHandler
+app.FileListHandler
 app.StyleSheetHandler
 app.MainPageHandler
 app.LoginHandler
 app.RegisterHandler
+app.LogOutHandler
+app.UsersHandler

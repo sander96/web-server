@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Files</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/list.css">
+</head>
+<body>
+<h1>#title#</h1>
+<table>
+    <tr>
+        <th>File Name</th>
+        <th>Last Modified</th>
+        <th>Size (bytes)</th>
+    </tr>
+    <tr>
+        <td><a href="../">../</a></td>
+        <td></td>
+        <td></td>
+    </tr>
+    #list#
+</table>
+<br>
+<div>
+    <form method="post" enctype="multipart/form-data">
+        <input type="submit" value="Upload file">
+        <input type="file" name="filename">
+    </form>
+</div>
+<div>
+    <form method="get">
+        <input type="submit" name="delete" value="Delete Files">
+    </form>
+</div>
+</body>
+</html>

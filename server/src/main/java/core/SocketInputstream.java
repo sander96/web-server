@@ -19,7 +19,6 @@ public class SocketInputstream extends InputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-
         if (isHeaderAvailable) {
             byte[] tmp = new byte[b.length];
             int num = inputStream.read(tmp);
@@ -34,7 +33,6 @@ public class SocketInputstream extends InputStream {
                 return num;
 
             } else {
-
                 headerLength += delimiterStart;
                 isHeaderAvailable = false;
                 inputStream.reset();

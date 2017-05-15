@@ -6,14 +6,24 @@
     <link rel="stylesheet" type="text/css" href="/stylesheets/list.css">
 </head>
 <body>
-    <h1>#title#</h1>
+<h1>#title#</h1>
+<form method="post">
     <table>
         <tr>
             <th>File Name</th>
             <th>Last Modified</th>
             <th>Size (bytes)</th>
+            <th>Select</th>
+        </tr>
+        <tr>
+            <td><a href="../">../</a></td>
+            <td></td>
+            <td></td>
+            <td></td>
         </tr>
         #list#
     </table>
+    <input type="submit" value="Delete">
+</form>
 </body>
 </html>

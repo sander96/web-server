@@ -23,7 +23,12 @@ public class RegisterHandler implements ResponseHandler {
             String[] userData = readUserData(inputStream);
 
             if (isRegisterSuccessful(userData[0], userData[1])) {
+                List<Header> headers = new ArrayList<>();
+                headers.add(new Header("Location", "/"));
+                headers.add(new Header("Set-Cookie", generateCookie(userData[0])));
 
+                ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.FOUND, headers);
+                return;
             } else {
                 page = page.replace("#paragraph#", "Username \"" + userData[0] + "\" already exists.");
             }
@@ -42,7 +47,7 @@ public class RegisterHandler implements ResponseHandler {
 
     @Override
     public String getKey() {
-        return "/register/";
+        return "/register";
     }
 
     private String getRegisterPage() throws IOException {
@@ -87,6 +92,15 @@ public class RegisterHandler implements ResponseHandler {
 
             UserManager userManager = new UserManager(connection);
             return userManager.registerUser(username, password);
+        }
+    }
+
+    private String generateCookie(String username) throws SQLException{
+        String url = "jdbc:h2:./data/database/database";
+
+        try (Connection connection = DriverManager.getConnection(url)) {
+            UserManager userManager = new UserManager(connection);
+            return "id=" + userManager.createCookie(username) + "; Max-Age=60";
         }
     }
 }

@@ -18,15 +18,11 @@ public class Server {
     public static void main(String[] args) throws IOException, SQLException {
         LOGGER.info("Server bootup");
 
-        String url = "jdbc:h2:./data/database/database";
-        try (ServerSocket serverSocket = new ServerSocket(8080);
-             Connection connection = DriverManager.getConnection(url)) {
-
-            RunScript.execute(connection, new FileReader("data/table.sql"));
+        try (ServerSocket serverSocket = new ServerSocket(8080)) {
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                Thread thread = new Thread(new Request(socket, connection));
+                Thread thread = new Thread(new Request(socket));
                 thread.start();
             }
         }
