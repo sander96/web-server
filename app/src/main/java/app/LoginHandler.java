@@ -65,13 +65,13 @@ public class LoginHandler implements ResponseHandler {
             rawData.append(new String(buffer, 0, numRead));
         }
         String[] parts = rawData.toString().split("&");
-        parts[0] = URLDecoder.decode(parts[0].substring(parts[0].indexOf("username=")+9), "UTF-8");
-        parts[1] = URLDecoder.decode(parts[1].substring(parts[1].indexOf("password=")+9), "UTF-8");
+        parts[0] = URLDecoder.decode(parts[0].substring(parts[0].indexOf("username=") + 9), "UTF-8");
+        parts[1] = URLDecoder.decode(parts[1].substring(parts[1].indexOf("password=") + 9), "UTF-8");
 
         return parts;
     }
 
-    private boolean login(String username, String password) throws SQLException{
+    private boolean login(String username, String password) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
 
         try (Connection connection = DriverManager.getConnection(url)) {
@@ -80,12 +80,12 @@ public class LoginHandler implements ResponseHandler {
         }
     }
 
-    private String generateCookie(String username) throws SQLException{
+    private String generateCookie(String username) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
 
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
-            return "id=" + userManager.createCookie(username) + "; Max-Age=60";
+            return "id=" + userManager.createCookie(username) + "; Max-Age=3660";
         }
     }
 }

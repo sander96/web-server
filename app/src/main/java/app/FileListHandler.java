@@ -2,6 +2,7 @@ package app;
 
 
 import core.*;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class FileListHandler implements ResponseHandler{
+public class FileListHandler implements ResponseHandler {
 
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
@@ -26,9 +27,9 @@ public class FileListHandler implements ResponseHandler{
             String htmlList;
 
             if (isUser(request)) {
-                if (request.getMethod() == Method.POST){
+                if (request.getMethod() == Method.POST) {
                     if (request.getQueryParams().get("delete") != null &&
-                            request.getQueryParams().get("delete").equals("Delete Files")) {
+                            request.getQueryParams().get("delete").equals("Delete+Files")) {
 
                         delete(request, inputStream);
                         headerList.add(new Header("Location", request.getPath()));
@@ -38,16 +39,25 @@ public class FileListHandler implements ResponseHandler{
                     uploadFile(request, inputStream);
                 }
                 if (request.getQueryParams().get("delete") != null &&
-                        request.getQueryParams().get("delete").equals("Delete Files")) {
+                        request.getQueryParams().get("delete").equals("Delete+Files")) {
 
-                    responsePage = ResourceLoader.loadTemplate(this,"list-template-delete.html");
+                    responsePage = ResourceLoader.loadTemplate(this, "list-template-delete.html");
                     htmlList = generateList(file, true, request);
                 } else {
                     responsePage = ResourceLoader.loadTemplate(this, "list-template-user-normal.html");
                     htmlList = generateList(file, false, request);
                 }
+                if (request.getQueryParams().get("folder") != null &&
+                        request.getQueryParams().get("folder").equals("Create+folder")) {
+
+                    String folderName = URLDecoder.decode(request.getQueryParams().get("folder-name"), "UTF-8");
+                    new File("data" + request.getPath() + folderName).mkdir();
+
+                    headerList.add(new Header("Location", request.getPath()));
+                    ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.FOUND, headerList);
+                }
             } else {
-                responsePage = ResourceLoader.loadTemplate(this,"list-template-guest.html");
+                responsePage = ResourceLoader.loadTemplate(this, "list-template-guest.html");
                 htmlList = generateList(file, false, request);
             }
 
@@ -63,10 +73,17 @@ public class FileListHandler implements ResponseHandler{
 
         } else if (file.isFile()) {
             List<Header> headerList = new ArrayList<>();
-            headerList.add(new Header("Content-Type", "multipart/form-data"));
+
+            String type = request.getQueryParams().get("type");
+
+            if (type != null) {
+                headerList.add(new Header("Content-Type", type));
+            } else {
+                headerList.add(new Header("Content-Type", "multipart/form-data"));
+            }
+
             headerList.add(new Header("Content-Length", String.valueOf(file.length())));
-            ResponseHead.sendResponseHead(outputStream, request.getScheme(),
-                    StatusCode.OK, headerList);
+            ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.OK, headerList);
 
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
                 byte[] buffer = new byte[1024];
@@ -89,34 +106,42 @@ public class FileListHandler implements ResponseHandler{
         return "/files/*";
     }
 
-    private void delete(Request request, SocketInputstream inputStream) throws IOException{
+    private void delete(Request request, SocketInputstream inputStream) throws IOException {
         StringBuilder sb = new StringBuilder();
         byte[] buffer = new byte[1024];
 
         while (true) {
             int numRead = inputStream.read(buffer);
-            if (numRead == -1) break;
+            if (numRead == -1) {
+                break;
+            }
 
             sb.append(new String(buffer, 0, numRead, "UTF-8"));
         }
 
         String[] fileList = sb.toString().split("&");
-        for (String fileName : fileList) {
-            fileName = URLDecoder.decode(fileName.split("=")[0], "UTF-8");
-            File file = new File(Paths.get("data", request.getPath(), fileName).toUri());
-            file.delete();
+
+        for (String filename : fileList) {
+            filename = URLDecoder.decode(filename.split("=")[0], "UTF-8");
+            File file = new File("data" + request.getPath() + filename);
+
+            if (file.isDirectory()) {
+                FileUtils.deleteDirectory(file);
+            } else {
+                file.delete();
+            }
         }
     }
 
-    private String generateList(File parentFolder, boolean checkbox, Request request) {
+    private String generateList(File parentFolder, boolean checkbox, Request request) throws IOException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String[] fileList = parentFolder.list();
         String htmlList = "";
 
         if (fileList != null) {
-            for (String s : fileList) {
+            for (String filename : fileList) {
                 String slash = "";
-                File folderContent = new File(Paths.get("data", request.getPath(), s).toUri());
+                File folderContent = new File(Paths.get("data", request.getPath(), filename).toUri());
                 if (folderContent.isDirectory()) {
                     slash = "/";
                 }
@@ -126,8 +151,26 @@ public class FileListHandler implements ResponseHandler{
 
                 // link and filename
                 tmp1.append("<td>");
-                tmp1.append("<a href=\"").append(request.getPath()).append(s)
-                        .append(slash).append("\">").append(s).append("</a> ");
+                tmp1.append("<a href=\"").append(request.getPath()).append(filename)
+                        .append(slash).append("\">").append(filename).append(slash).append("</a> ");
+                tmp1.append("</td>\n");
+
+                // MIMEs
+                tmp1.append("<td>");
+
+                if (folderContent.isDirectory()) {
+                    tmp1.append("-");
+                } else {
+                    String type = MimeHandler.getType(filename);
+
+                    if (type == null) {
+                        tmp1.append("-");
+                    } else {
+                        tmp1.append("<a href=\"").append(request.getPath()).append(filename)
+                                .append("?type=").append(type).append("\">").append(type).append("</a> ");
+                    }
+                }
+
                 tmp1.append("</td>\n");
 
                 // last modified
@@ -143,9 +186,9 @@ public class FileListHandler implements ResponseHandler{
                 tmp1.append("</td>\n");
 
                 // checkbox
-                if (checkbox && !folderContent.isDirectory()) {
+                if (checkbox) {
                     tmp1.append("<td>");
-                    tmp1.append("<input type=\"checkbox\" ").append("name=\"").append(s).append("\">");
+                    tmp1.append("<input type=\"checkbox\" ").append("name=\"").append(filename).append("\">");
                     tmp1.append("</td>\n");
                 }
 
@@ -156,7 +199,7 @@ public class FileListHandler implements ResponseHandler{
         return htmlList;
     }
 
-    private boolean isUser(Request request) throws SQLException{
+    private boolean isUser(Request request) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
@@ -164,7 +207,7 @@ public class FileListHandler implements ResponseHandler{
         }
     }
 
-    private void uploadFile(Request request, SocketInputstream inputStream) throws IOException{
+    private void uploadFile(Request request, SocketInputstream inputStream) throws IOException {
         byte[] buffer = new byte[1024];
         int numRead = inputStream.read(buffer);
 
@@ -182,7 +225,7 @@ public class FileListHandler implements ResponseHandler{
                 if (contentEnd == -1) {
                     fileWriter.write(buffer, 0, numRead);
                 } else {
-                    fileWriter.write(buffer, 0, contentEnd-2);
+                    fileWriter.write(buffer, 0, contentEnd - 2);
                     break;
                 }
 
@@ -196,7 +239,7 @@ public class FileListHandler implements ResponseHandler{
         String data = new String(metaData);
         int start = data.indexOf("filename=") + "filename=".length();
 
-        data = data.substring(start+1);
+        data = data.substring(start + 1);
         int end = data.indexOf("\r");
 
         return data.substring(0, end).replace("\"", "");
@@ -215,9 +258,9 @@ public class FileListHandler implements ResponseHandler{
 
     private int getContentEnd(byte[] buffer, byte[] boundary) {
         Outerloop:
-        for (int i = 0; i < buffer.length-boundary.length; i++) {
+        for (int i = 0; i < buffer.length - boundary.length; i++) {
             for (int j = 0; j < boundary.length; j++) {
-                if (buffer[i+j] != boundary[j]) continue Outerloop;
+                if (buffer[i + j] != boundary[j]) continue Outerloop;
             }
             return i;
         }
@@ -225,7 +268,7 @@ public class FileListHandler implements ResponseHandler{
         return -1;
     }
 
-    private byte[] getMetaData(byte[] b, int length) throws IOException{
+    private byte[] getMetaData(byte[] b, int length) throws IOException {
         byte[] delimiter = new byte[4];
 
         for (int i = 0; i < length; i++) {
@@ -235,9 +278,9 @@ public class FileListHandler implements ResponseHandler{
             delimiter[3] = b[i];
 
             if (delimiter[0] == '\r' && delimiter[1] == '\n' && delimiter[2] == '\r' && delimiter[3] == '\n') {
-                byte[] metaData = new byte[i+1];
-                System.arraycopy(b, 0, metaData, 0, i+1);
-                System.arraycopy(b, i+1, b, 0, length-i-1);
+                byte[] metaData = new byte[i + 1];
+                System.arraycopy(b, 0, metaData, 0, i + 1);
+                System.arraycopy(b, i + 1, b, 0, length - i - 1);
                 return metaData;
             }
         }

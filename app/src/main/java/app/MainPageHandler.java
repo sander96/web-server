@@ -10,17 +10,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainPageHandler implements ResponseHandler{
+public class MainPageHandler implements ResponseHandler {
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
         byte[] page_bytes;
 
-        if (isAdmin(request.getHeaders().get("Cookie"))){
+        if (isAdmin(request.getHeaders().get("Cookie"))) {
             String userIndexPage = ResourceLoader.loadTemplate(this, "index_admin.html");
             String userName = getUserName(request.getHeaders().get("Cookie"));
             page_bytes = userIndexPage.replace("#username#", userName).getBytes();
 
-        }else if (isUser(request.getHeaders().get("Cookie"))) {
+        } else if (isUser(request.getHeaders().get("Cookie"))) {
             String userIndexPage = ResourceLoader.loadTemplate(this, "index_user.html");
             String userName = getUserName(request.getHeaders().get("Cookie"));
             page_bytes = userIndexPage.replace("#username#", userName).getBytes();
@@ -43,7 +43,7 @@ public class MainPageHandler implements ResponseHandler{
         return "/";
     }
 
-    private String getUserName(String cookie) throws IOException, SQLException{
+    private String getUserName(String cookie) throws IOException, SQLException {
         String url = "jdbc:h2:./data/database/database";
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
@@ -51,7 +51,7 @@ public class MainPageHandler implements ResponseHandler{
         }
     }
 
-    private boolean isAdmin(String cookie) throws SQLException{
+    private boolean isAdmin(String cookie) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
@@ -59,7 +59,7 @@ public class MainPageHandler implements ResponseHandler{
         }
     }
 
-    private boolean isUser(String cookie) throws SQLException{
+    private boolean isUser(String cookie) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);

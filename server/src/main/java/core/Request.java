@@ -1,22 +1,17 @@
 package core;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
 public class Request implements Runnable {
-    private static final Logger LOGGER = LogManager.getLogger(Request.class);
     private Socket socket;
     private ByteList byteList = new ByteList();
     private Map<String, String> headers = new HashMap<>();
@@ -105,6 +100,8 @@ public class Request implements Runnable {
         int pathParamsStart = methodLine[1].indexOf(';');
         int queryParamsStart = methodLine[1].indexOf('?');
 
+        methodLine[1] = methodLine[1].replaceAll("\\+", "%2B");
+
         if (pathParamsStart < 0 && queryParamsStart < 0) {
             path = URLDecoder.decode(methodLine[1], "UTF-8");
         } else if (pathParamsStart >= 0 && queryParamsStart < 0) {
@@ -130,7 +127,7 @@ public class Request implements Runnable {
             if (sep < 0) continue;
 
             tmp[0] = lines[i].substring(0, sep).trim();
-            tmp[1] = lines[i].substring(sep+1).trim();
+            tmp[1] = lines[i].substring(sep + 1).trim();
             headers.put(tmp[0], tmp[1]);
         }
     }
@@ -194,7 +191,7 @@ public class Request implements Runnable {
             }
 
             if (currentPath.length() == 0) break;
-            currentPath = currentPath.substring(0, currentPath.lastIndexOf("/")+1);
+            currentPath = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
         }
 
         return null;

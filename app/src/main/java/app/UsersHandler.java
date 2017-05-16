@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class UsersHandler implements ResponseHandler{
+public class UsersHandler implements ResponseHandler {
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
         if (!isAdmin(request.getHeaders().get("Cookie"))) {
@@ -48,7 +48,7 @@ public class UsersHandler implements ResponseHandler{
         return "/users";
     }
 
-    private boolean isAdmin(String cookie) throws SQLException{
+    private boolean isAdmin(String cookie) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
@@ -56,27 +56,30 @@ public class UsersHandler implements ResponseHandler{
         }
     }
 
-    private String generateUsersList() throws SQLException{
+    private String generateUsersList() throws SQLException {
         StringBuilder htmlList = new StringBuilder();
-        Map<String, Boolean> userNames = getUsernames();
-        ArrayList<String> sortedUserNames = new ArrayList<>(userNames.keySet());
-        Collections.sort(sortedUserNames);
+        Map<String, Boolean> usernames = getUsernames();
+        ArrayList<String> sortedUsernames = new ArrayList<>(usernames.keySet());
+        Collections.sort(sortedUsernames);
 
-        for (String userName : sortedUserNames) {
+        for (String username : sortedUsernames) {
             htmlList.append("<tr>\n");
 
             // append username
             htmlList.append("<td>");
-            htmlList.append(userName);
+            htmlList.append(username);
             htmlList.append("</td>\n");
 
             //append checkbox
             htmlList.append("<td>");
-            if (!userNames.get(userName)) {
+            if (!usernames.get(username)) {
                 htmlList.append("<input type=\"checkbox\" name=\"");
-                htmlList.append(userName);
+                htmlList.append(username);
                 htmlList.append("\">");
+            } else {
+                htmlList.append("<input type=\"checkbox\" disabled>");
             }
+
             htmlList.append("</td>\n");
             htmlList.append("</tr>\n");
         }
@@ -84,7 +87,7 @@ public class UsersHandler implements ResponseHandler{
         return htmlList.toString();
     }
 
-    private Map<String, Boolean> getUsernames() throws SQLException{
+    private Map<String, Boolean> getUsernames() throws SQLException {
         String url = "jdbc:h2:./data/database/database";
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
@@ -92,7 +95,7 @@ public class UsersHandler implements ResponseHandler{
         }
     }
 
-    private void deleteUsers(SocketInputstream inputStream) throws IOException, SQLException{
+    private void deleteUsers(SocketInputstream inputStream) throws IOException, SQLException {
         StringBuilder sb = new StringBuilder();
         byte[] buffer = new byte[1024];
         while (true) {

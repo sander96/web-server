@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StyleSheetHandler implements ResponseHandler{
+public class StyleSheetHandler implements ResponseHandler {
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
-        String fileName = request.getPath().substring(request.getPath().lastIndexOf("/")+1);
+        String fileName = request.getPath().substring(request.getPath().lastIndexOf("/") + 1);
 
         String page = ResourceLoader.loadTemplate(this, fileName);
         if (page == null) {
