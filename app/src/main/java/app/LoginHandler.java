@@ -3,7 +3,6 @@ package app;
 import core.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.sql.Connection;
@@ -25,7 +24,7 @@ public class LoginHandler implements ResponseHandler {
 
                 ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.FOUND, headers);
             } else {
-                String page = getLoginPage();
+                String page = ResourceLoader.loadTemplate(this, "login.html");
                 page = page.replace("#paragraph#", "Username or password wrong");
                 byte[] page_bytes = page.getBytes();
 
@@ -37,7 +36,7 @@ public class LoginHandler implements ResponseHandler {
                 outputStream.write(page_bytes);
             }
         } else {
-            String page = getLoginPage();
+            String page = ResourceLoader.loadTemplate(this, "login.html");
             page = page.replace("#paragraph#", "");
             byte[] page_bytes = page.getBytes();
 
@@ -55,24 +54,7 @@ public class LoginHandler implements ResponseHandler {
         return "/login";
     }
 
-    private String getLoginPage() throws IOException {
-        StringBuilder styleSheet = new StringBuilder();
-        try (InputStream fileInputStream = getClass().getClassLoader()
-                .getResourceAsStream("WebContent\\login.html")) {
-            byte[] buffer = new byte[1024];
-
-            while (true) {
-                int numRead = fileInputStream.read(buffer);
-                if (numRead == -1) break;
-
-                styleSheet.append(new String(buffer, 0, numRead, "UTF-8"));
-            }
-        }
-
-        return styleSheet.toString();
-    }
-
-    public String[] readUserData(SocketInputstream inputstream) throws IOException {
+    private String[] readUserData(SocketInputstream inputstream) throws IOException {
         StringBuilder rawData = new StringBuilder();
         byte[] buffer = new byte[1024];
 
@@ -89,7 +71,7 @@ public class LoginHandler implements ResponseHandler {
         return parts;
     }
 
-    public boolean login(String username, String password) throws SQLException{
+    private boolean login(String username, String password) throws SQLException{
         String url = "jdbc:h2:./data/database/database";
 
         try (Connection connection = DriverManager.getConnection(url)) {

@@ -40,14 +40,14 @@ public class FileListHandler implements ResponseHandler{
                 if (request.getQueryParams().get("delete") != null &&
                         request.getQueryParams().get("delete").equals("Delete Files")) {
 
-                    responsePage = loadTemplate("list-template-delete.html");
+                    responsePage = ResourceLoader.loadTemplate(this,"list-template-delete.html");
                     htmlList = generateList(file, true, request);
                 } else {
-                    responsePage = loadTemplate("list-template-user-normal.html");
+                    responsePage = ResourceLoader.loadTemplate(this, "list-template-user-normal.html");
                     htmlList = generateList(file, false, request);
                 }
             } else {
-                responsePage = loadTemplate("list-template-guest.html");
+                responsePage = ResourceLoader.loadTemplate(this,"list-template-guest.html");
                 htmlList = generateList(file, false, request);
             }
 
@@ -154,24 +154,6 @@ public class FileListHandler implements ResponseHandler{
             }
         }
         return htmlList;
-    }
-
-    private String loadTemplate(String filename) throws IOException{
-        byte[] buffer = new byte[1024];
-        StringBuilder builder = new StringBuilder();
-
-        try (InputStream fileInputStream = getClass().getClassLoader()
-                .getResourceAsStream("WebContent\\" + filename)) {
-
-            while (true) {
-                int bytesRead = fileInputStream.read(buffer);
-                if (bytesRead == -1) break;
-
-                builder.append(new String(buffer, 0, bytesRead, "UTF-8"));
-            }
-        }
-
-        return builder.toString();
     }
 
     private boolean isUser(Request request) throws SQLException{

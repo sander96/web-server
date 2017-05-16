@@ -26,7 +26,7 @@ public class LogOutHandler implements ResponseHandler{
         return "/logout";
     }
 
-    public String getUsername(String cookie) throws SQLException{
+    private String getUsername(String cookie) throws SQLException{
         String url = "jdbc:h2:./data/database/database";
 
         try (Connection connection = DriverManager.getConnection(url)) {

@@ -5,7 +5,6 @@ import org.h2.tools.RunScript;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.sql.Connection;
@@ -17,7 +16,7 @@ import java.util.List;
 public class RegisterHandler implements ResponseHandler {
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
-        String page = getRegisterPage();
+        String page = ResourceLoader.loadTemplate(this, "register.html");
 
         if (request.getMethod() == Method.POST) {
             String[] userData = readUserData(inputStream);
@@ -48,23 +47,6 @@ public class RegisterHandler implements ResponseHandler {
     @Override
     public String getKey() {
         return "/register";
-    }
-
-    private String getRegisterPage() throws IOException {
-        StringBuilder styleSheet = new StringBuilder();
-        try (InputStream fileInputStream = getClass().getClassLoader()
-                .getResourceAsStream("WebContent\\register.html")) {
-            byte[] buffer = new byte[1024];
-
-            while (true) {
-                int numRead = fileInputStream.read(buffer);
-                if (numRead == -1) break;
-
-                styleSheet.append(new String(buffer, 0, numRead, "UTF-8"));
-            }
-        }
-
-        return styleSheet.toString();
     }
 
     private String[] readUserData(SocketInputstream inputstream) throws IOException {

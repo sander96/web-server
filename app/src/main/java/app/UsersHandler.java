@@ -32,7 +32,7 @@ public class UsersHandler implements ResponseHandler{
 
 
         List<Header> headerList = new ArrayList<>();
-        String page = loadTemplate("users.html");
+        String page = ResourceLoader.loadTemplate(this, "users.html");
         page = page.replace("#list#", generateUsersList());
         byte[] page_bytes = page.getBytes();
 
@@ -54,24 +54,6 @@ public class UsersHandler implements ResponseHandler{
             UserManager userManager = new UserManager(connection);
             return userManager.isAdmin(cookie);
         }
-    }
-
-    private String loadTemplate(String filename) throws IOException{
-        byte[] buffer = new byte[1024];
-        StringBuilder builder = new StringBuilder();
-
-        try (InputStream fileInputStream = getClass().getClassLoader()
-                .getResourceAsStream("WebContent\\" + filename)) {
-
-            while (true) {
-                int bytesRead = fileInputStream.read(buffer);
-                if (bytesRead == -1) break;
-
-                builder.append(new String(buffer, 0, bytesRead, "UTF-8"));
-            }
-        }
-
-        return builder.toString();
     }
 
     private String generateUsersList() throws SQLException{
