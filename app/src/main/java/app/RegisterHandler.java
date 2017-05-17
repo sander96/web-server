@@ -29,7 +29,7 @@ public class RegisterHandler implements ResponseHandler {
                 ResponseHead.sendResponseHead(outputStream, request.getScheme(), StatusCode.FOUND, headers);
                 return;
             } else {
-                page = page.replace("#paragraph#", "Username \"" + userData[0] + "\" already exists.");
+                page = page.replace("#paragraph#", "Bad username or password.");
             }
         }
 
@@ -55,7 +55,9 @@ public class RegisterHandler implements ResponseHandler {
 
         while (true) {
             int numRead = inputstream.read(buffer);
-            if (numRead == -1) break;
+            if (numRead == -1) {
+                break;
+            }
 
             rawData.append(new String(buffer, 0, numRead));
         }
@@ -67,6 +69,14 @@ public class RegisterHandler implements ResponseHandler {
     }
 
     private boolean isRegisterSuccessful(String username, String password) throws IOException, SQLException {
+        if(username.length() == 0 || password.length() == 0){
+            return false;
+        }
+
+        if(username.contains("<")){ // no html tags allowed
+            return false;
+        }
+
         String url = "jdbc:h2:./data/database/database";
 
         try (Connection connection = DriverManager.getConnection(url)) {

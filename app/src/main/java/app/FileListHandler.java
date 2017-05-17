@@ -90,7 +90,9 @@ public class FileListHandler implements ResponseHandler {
 
                 while (true) {
                     int numRead = fileInputStream.read(buffer);
-                    if (numRead == -1) break;
+                    if (numRead == -1) {
+                        break;
+                    }
 
                     outputStream.write(buffer, 0, numRead);
                 }

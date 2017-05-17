@@ -37,7 +37,9 @@ public class Request implements Runnable {
 
             while (true) {
                 bytesRead = inputStream.read(buffer);
-                if (bytesRead == -1) break;
+                if (bytesRead == -1) {
+                    break;
+                }
 
                 byteList.add(buffer, 0, bytesRead);
             }
@@ -46,10 +48,6 @@ public class Request implements Runnable {
             analyze(headerData);
             inputStream.specifyContentLength(headers.get("Content-Length"));
 
-            // TODO delete when development is finished
-            System.out.println(headerData);
-
-            //handlerMap.get(method).sendResponse(this, inputStream, outputStream);
             ResponseHandler handler = getHandler(path);
             if (handler == null) {
                 ResponseHead.sendResponseHead(outputStream, getScheme(), StatusCode.NOT_FOUND, null);
@@ -124,22 +122,15 @@ public class Request implements Runnable {
             String[] tmp = new String[2];
             int sep = lines[i].indexOf(":");
 
-            if (sep < 0) continue;
+            if (sep == -1) {
+                continue;
+            }
 
             tmp[0] = lines[i].substring(0, sep).trim();
             tmp[1] = lines[i].substring(sep + 1).trim();
             headers.put(tmp[0], tmp[1]);
         }
     }
-
-    /*private Map<Method, ResponseHandler> loadHandlers() {
-        Map<Method, ResponseHandler> handlers = new HashMap<>();
-
-        for (ResponseHandler handler : ServiceLoader.load(ResponseHandler.class)) {
-            handlers.put(handler.getKey(), handler);
-        }
-        return handlers;
-    }*/
 
     private Map<String, ResponseHandler> loadHandlers() {
         Map<String, ResponseHandler> handlers = new HashMap<>();
@@ -190,7 +181,9 @@ public class Request implements Runnable {
                 currentPath = currentPath.substring(0, currentPath.lastIndexOf("/"));
             }
 
-            if (currentPath.length() == 0) break;
+            if (currentPath.length() == 0) {
+                break;
+            }
             currentPath = currentPath.substring(0, currentPath.lastIndexOf("/") + 1);
         }
 

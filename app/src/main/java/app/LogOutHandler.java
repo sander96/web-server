@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogOutHandler implements ResponseHandler{
+public class LogOutHandler implements ResponseHandler {
     @Override
     public void sendResponse(Request request, SocketInputstream inputStream, OutputStream outputStream) throws IOException, SQLException {
         List<Header> headers = new ArrayList<>();
@@ -26,7 +26,7 @@ public class LogOutHandler implements ResponseHandler{
         return "/logout";
     }
 
-    private String getUsername(String cookie) throws SQLException{
+    private String getUsername(String cookie) throws SQLException {
         String url = "jdbc:h2:./data/database/database";
 
         try (Connection connection = DriverManager.getConnection(url)) {

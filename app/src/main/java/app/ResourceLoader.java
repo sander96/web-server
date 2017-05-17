@@ -13,11 +13,15 @@ public class ResourceLoader {
         try (InputStream fileInputStream = handler.getClass().getClassLoader()
                 .getResourceAsStream("WebContent\\" + filename)) {
 
-            if (fileInputStream == null) return null;
+            if (fileInputStream == null) {
+                return null;
+            }
 
             while (true) {
                 int bytesRead = fileInputStream.read(buffer);
-                if (bytesRead == -1) break;
+                if (bytesRead == -1) {
+                    break;
+                }
 
                 builder.append(new String(buffer, 0, bytesRead, "UTF-8"));
             }

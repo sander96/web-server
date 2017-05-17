@@ -13,7 +13,6 @@ import java.sql.SQLException;
 public class Server {
     public static void main(String[] args) throws IOException, SQLException {
         try (ServerSocket serverSocket = new ServerSocket(8080)) {
-
             String url = "jdbc:h2:./data/database/database";
 
             try (Connection connection = DriverManager.getConnection(url)) {

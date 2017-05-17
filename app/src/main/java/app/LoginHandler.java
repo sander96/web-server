@@ -60,7 +60,9 @@ public class LoginHandler implements ResponseHandler {
 
         while (true) {
             int numRead = inputstream.read(buffer);
-            if (numRead == -1) break;
+            if (numRead == -1) {
+                break;
+            }
 
             rawData.append(new String(buffer, 0, numRead));
         }

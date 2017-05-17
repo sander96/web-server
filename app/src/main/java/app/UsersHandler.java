@@ -30,7 +30,6 @@ public class UsersHandler implements ResponseHandler {
             return;
         }
 
-
         List<Header> headerList = new ArrayList<>();
         String page = ResourceLoader.loadTemplate(this, "users.html");
         page = page.replace("#list#", generateUsersList());
@@ -100,7 +99,9 @@ public class UsersHandler implements ResponseHandler {
         byte[] buffer = new byte[1024];
         while (true) {
             int numRead = inputStream.read(buffer);
-            if (numRead == -1) break;
+            if (numRead == -1) {
+                break;
+            }
 
             sb.append(new String(buffer, 0, numRead, "UTF-8"));
         }
@@ -109,10 +110,12 @@ public class UsersHandler implements ResponseHandler {
         try (Connection connection = DriverManager.getConnection(url)) {
             UserManager userManager = new UserManager(connection);
 
-            String[] users = sb.toString().split("&");
-            for (String user : users) {
-                user = URLDecoder.decode(user.substring(0, user.indexOf("=")), "UTF-8");
-                userManager.deleteUser(user);
+            if(sb.length() != 0){
+                String[] users = sb.toString().split("&");
+                for (String user : users) {
+                    user = URLDecoder.decode(user.substring(0, user.indexOf("=")), "UTF-8");
+                    userManager.deleteUser(user);
+                }
             }
         }
     }
